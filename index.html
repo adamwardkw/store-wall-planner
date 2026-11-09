@@ -223,6 +223,137 @@
   body.preview-mode .wall-item .lbl { display: none; }
   body.preview-mode #wall { border-color: #B4ADA1; }
 
+  /* ---------- Mode switch ---------- */
+  .mode-switch { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .mode-switch button {
+    border: none; background: var(--panel); color: var(--ink-soft);
+    padding: 7px 13px; font-size: 13px;
+  }
+  .mode-switch button.on { background: var(--accent-deep); color: #fff; }
+  body.mode-slots .only-measured { display: none !important; }
+  body.mode-measured .only-slots { display: none !important; }
+
+  /* ---------- Slots (plug & play) ---------- */
+  #slotWrap { position: relative; padding: 8px 6px 0; align-self: stretch; display: flex; justify-content: center; }
+  #slotScene { position: relative; display: inline-block; max-width: 100%; }
+  #slotWall {
+    position: relative;
+    min-width: 300px; min-height: 200px;
+    padding: 18px 16px;
+    background-color: var(--scene-wall);
+    background-image:
+      radial-gradient(ellipse 130% 105% at 35% 5%, rgba(255,255,255,.24), rgba(255,255,255,0) 72%),
+      linear-gradient(180deg, rgba(255,255,255,0) 62%, rgba(65,55,45,.035) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    background-size: auto, auto, 140px 140px;
+    border: 1px solid #C3BDB2; border-bottom: none; border-radius: 2px 2px 0 0;
+    box-shadow: inset 0 10px 26px rgba(255,255,255,.22), inset 0 -22px 34px rgba(50,45,38,.07);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .slot-row { position: relative; display: flex; gap: 8px; align-items: stretch; padding-top: 16px; }
+  .row-badge {
+    position: absolute; top: -1px; left: 0;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-soft);
+    background: rgba(255,255,255,.55); border: 1px solid rgba(120,110,96,.25);
+    border-radius: 5px; padding: 1px 6px; pointer-events: none;
+  }
+  .row-tools {
+    position: absolute; top: -4px; right: 0; display: flex; gap: 2px;
+    background: rgba(255,255,255,.75); border: 1px solid rgba(120,110,96,.22);
+    border-radius: 7px; padding: 1px 3px;
+  }
+  .row-tools button {
+    border: none; background: transparent; color: #5B6773;
+    font-size: 12px; line-height: 1; padding: 3px 5px; border-radius: 5px;
+  }
+  .row-tools button:hover { background: rgba(37,49,60,.08); color: var(--ink); }
+  .slot {
+    flex: 1 1 0; min-width: 44px; height: 92px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none; position: relative;
+    background-size: cover; background-position: center;
+  }
+  .slot.empty {
+    border: 2px dashed rgba(120,110,96,.38);
+    background: rgba(255,255,255,.30);
+    color: rgba(90,100,110,.55); font-size: 20px; font-weight: 300;
+  }
+  .slot.empty:hover { border-color: var(--accent); color: var(--accent-deep); background: rgba(255,255,255,.55); }
+  .slot.empty::after { content: "+"; }
+  .slot.filled {
+    border: 1px solid rgba(46,40,32,.28);
+    box-shadow: 2px 3px 4px rgba(35,30,25,.20), 4px 7px 10px rgba(35,30,25,.08), inset 1px 1px 0 rgba(255,255,255,.22);
+  }
+  .slot.filled.has-image {
+    border: none;
+    box-shadow: 2px 3px 4px rgba(35,30,25,.24), 5px 8px 12px rgba(35,30,25,.10), inset 0 0 0 3px #FBFAF6, inset 0 0 0 4px rgba(46,40,32,.30);
+  }
+  .slot .num {
+    position: absolute; top: 2px; left: 2px;
+    min-width: 15px; height: 15px; border-radius: 4px;
+    background: rgba(37,49,60,.82); color: #fff;
+    font-family: var(--mono); font-size: 9px; line-height: 15px; text-align: center;
+    padding: 0 3px; pointer-events: none;
+  }
+  .slot .lbl {
+    font-size: 11px; font-weight: 600; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    padding: 0 4px; text-align: center; line-height: 1.2;
+    pointer-events: none; word-break: break-word;
+  }
+  .slot-empty-note {
+    margin: 34px auto; text-align: center; color: rgba(90,100,110,.7); font-size: 13px;
+  }
+  .slot-empty-note .templates { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .slot-empty-note .templates .btn { background: rgba(255,255,255,.8); }
+  .add-row-bar {
+    border: 2px dashed rgba(120,110,96,.35); border-radius: 8px;
+    background: rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px; color: rgba(90,100,110,.75); font-size: 13px;
+  }
+  .add-row-bar input {
+    width: 52px; padding: 5px 6px; text-align: center;
+    border: 1px solid var(--line); border-radius: 7px; background: #fff;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .add-row-bar .btn { background: rgba(255,255,255,.85); }
+  #slotTotals { margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+
+  /* ---------- Slot picker popover ---------- */
+  #picker {
+    position: fixed; z-index: 60; width: 264px; max-width: calc(100vw - 24px);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(37,49,60,.18);
+    padding: 12px; display: none;
+  }
+  #picker.show { display: block; }
+  #picker .pk-title { font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 8px; }
+  #picker .pk-list { max-height: 200px; overflow-y: auto; margin-bottom: 8px; }
+  #picker .pk-item {
+    display: flex; align-items: center; gap: 9px; width: 100%;
+    padding: 7px 8px; border: 1px solid transparent; border-radius: 7px;
+    background: transparent; text-align: left; font-size: 13px;
+  }
+  #picker .pk-item:hover { background: var(--bg); border-color: var(--line); }
+  #picker .pk-item .chip { width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.10); background-size: cover; background-position: center; }
+  #picker .pk-new { display: flex; gap: 6px; }
+  #picker .pk-new input {
+    flex: 1; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--bg); font-size: 13px;
+  }
+  #picker .pk-actions { display: flex; gap: 6px; margin-top: 8px; }
+  #picker .pk-actions .btn { flex: 1; padding: 6px 8px; font-size: 12px; }
+  #picker .pk-empty { font-size: 12px; color: var(--ink-soft); padding: 4px 2px 8px; }
+
+  body.preview-mode .row-badge,
+  body.preview-mode .row-tools,
+  body.preview-mode .add-row-bar,
+  body.preview-mode .slot .num,
+  body.preview-mode .slot-row.all-empty { display: none; }
+  body.preview-mode .slot.empty { visibility: hidden; }
+  body.preview-mode .slot-row { padding-top: 0; }
+
   /* ---------- Inspector ---------- */
   #inspector .insp-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
   #inspector .insp-dims { color: var(--ink-soft); margin-bottom: 14px; }
@@ -251,7 +382,23 @@
   #print-head, #print-legend { display: none; }
   @media print {
     body { background: #fff; }
-    header, aside, #inspector, main .stage-toolbar, .overlap-banner { display: none !important; }
+    header, aside, #inspector, main .stage-toolbar, .overlap-banner, #picker, .row-tools, .add-row-bar, #slotTotals { display: none !important; }
+    .row-badge { display: none; }
+    .slot-row { padding-top: 0; }
+    #slotWrap { padding: 0; }
+    #slotWall {
+      background: #fff !important; box-shadow: none !important;
+      border: 1px solid #777 !important; border-radius: 0; margin: 0 auto;
+      width: 100% !important; max-width: 100% !important;
+    }
+    .slot { height: 64px; }
+    .slot.empty { border: 1px solid #bbb !important; background: #fff !important; }
+    .slot.empty::after { content: none; }
+    .slot.filled, .slot.filled.has-image {
+      box-shadow: none !important; border: 1px solid #555 !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    }
+    .slot .lbl { text-shadow: none !important; }
     .app { display: block; height: auto; }
     main { padding: 0; display: block; overflow: visible; }
     #scene { display: block; }
@@ -287,7 +434,11 @@
     <h1>Wall Planner</h1>
     <span>plan the wall before you touch it</span>
   </div>
-  <div class="wall-size">
+  <div class="mode-switch" role="tablist" title="Planning style">
+    <button id="modeSlots" type="button">Plug &amp; play</button>
+    <button id="modeMeasured" type="button">Measured</button>
+  </div>
+  <div class="wall-size only-measured">
     Wall
     <input id="wallWft" type="number" min="0" max="60" value="12" title="feet"> ft
     <input id="wallWin" type="number" min="0" max="11" value="0" title="inches"> in
@@ -309,6 +460,17 @@
 
 <div class="app">
   <aside>
+    <h2 class="only-slots">Quick start</h2>
+    <div class="card only-slots">
+      <div class="field-row">
+        <label>Spots in the row
+          <input id="rowSpotsAside" class="num" type="number" min="1" max="40" value="5">
+        </label>
+      </div>
+      <button class="btn primary add-btn" id="addRowAside">Add a row</button>
+      <p class="empty-note" style="padding-bottom:0">Rows stack top to bottom on the wall. Tap any spot to fill it.</p>
+    </div>
+
     <h2>Add an item</h2>
     <div class="card">
       <div class="field-row">
@@ -316,7 +478,7 @@
           <input id="itemName" type="text" placeholder="Denim stack, poster, shelf" maxlength="40">
         </label>
       </div>
-      <div class="field-row">
+      <div class="field-row only-measured">
         <label>Width (in)
           <input id="itemW" class="num" type="number" min="1" max="400" value="24" step="0.5">
         </label>
@@ -333,7 +495,7 @@
             <button class="btn quiet" id="itemImageClear" type="button" hidden>clear</button>
           </span>
         </label>
-        <label>Quantity
+        <label class="only-measured">Quantity
           <input id="itemQty" class="num" type="number" min="1" max="99" value="1">
         </label>
       </div>
@@ -347,7 +509,8 @@
 
   <main>
     <div class="stage-toolbar">
-      <span class="hint">Drag items to move them, click one for exact placement. Grid lines are 1 ft apart.</span>
+      <span class="hint only-measured">Drag items to move them, click one for exact placement. Grid lines are 1 ft apart.</span>
+      <span class="hint only-slots">Tap a spot to fill it. Pick an item, or type a new one - it fills spot after spot.</span>
       <div class="right">
         <button class="btn" id="previewBtn" title="Hide the grid and measurements to see the finished wall">Preview</button>
         <span id="scaleReadout" class="mono"></span>
@@ -357,14 +520,32 @@
       <h1 id="printTitle">Wall plan</h1>
       <div class="sub" id="printSub"></div>
     </div>
-    <div id="wallWrap">
+    <div id="wallWrap" class="only-measured">
       <div id="scene">
         <div id="wall"></div>
         <div id="baseboard"></div>
         <div id="floor"></div>
       </div>
     </div>
-    <div class="scale-note"><span id="dimReadout" class="mono"></span><span id="placedReadout"></span></div>
+    <div id="slotWrap" class="only-slots">
+      <div id="slotScene">
+        <div id="slotWall"></div>
+        <div id="baseboard"></div>
+        <div id="floor"></div>
+      </div>
+    </div>
+    <div class="scale-note only-measured"><span id="dimReadout" class="mono"></span><span id="placedReadout"></span></div>
+    <div id="slotTotals" class="only-slots"></div>
+
+    <div id="picker">
+      <div class="pk-title" id="pkTitle">Fill this spot</div>
+      <div class="pk-list" id="pkList"></div>
+      <div class="pk-new">
+        <input id="pkNewName" type="text" placeholder="Or type a new item name" maxlength="40">
+        <button class="btn primary" id="pkNewAdd" type="button">Add</button>
+      </div>
+      <div class="pk-actions" id="pkActions"></div>
+    </div>
     <div class="overlap-banner" id="overlapBanner">Two or more items overlap. Move them apart before printing.</div>
 
     <div id="print-legend">
@@ -415,11 +596,23 @@
   // ---------- State ----------
   var LS_KEY = "wallPlanner.v1";
   var state = load() || {
+    mode: "slots",
     wall: { wIn: 144, hIn: 96 },
     items: [],                 // {id, name, wIn, hIn, color, image, qty}
     layouts: { "Layout 1": [] }, // name -> [{itemId, xIn, yIn, locked}]
-    current: "Layout 1"
+    current: "Layout 1",
+    slotLayouts: { "Rows 1": [] }, // name -> [{id, spots:[itemId|null, ...]}]
+    currentSlot: "Rows 1"
   };
+  migrate();
+
+  function migrate() {
+    if (!state.slotLayouts || typeof state.slotLayouts !== "object") state.slotLayouts = { "Rows 1": [] };
+    var names = Object.keys(state.slotLayouts);
+    if (!names.length) { state.slotLayouts["Rows 1"] = []; names = ["Rows 1"]; }
+    if (!state.currentSlot || !state.slotLayouts[state.currentSlot]) state.currentSlot = names[0];
+    if (state.mode !== "slots" && state.mode !== "measured") state.mode = "slots";
+  }
 
   var els = {
     wall: document.getElementById("wall"),
@@ -455,7 +648,10 @@
   // ---------- Undo / redo ----------
   var undoStack = [], redoStack = [];
   function snapshot() {
-    return JSON.stringify({ wall: state.wall, items: state.items, layouts: state.layouts, current: state.current });
+    return JSON.stringify({
+      wall: state.wall, items: state.items, layouts: state.layouts, current: state.current,
+      slotLayouts: state.slotLayouts, currentSlot: state.currentSlot
+    });
   }
   function pushUndo() {
     undoStack.push(snapshot());
@@ -466,7 +662,10 @@
   function restore(snap) {
     var s = JSON.parse(snap);
     state.wall = s.wall; state.items = s.items; state.layouts = s.layouts; state.current = s.current;
+    state.slotLayouts = s.slotLayouts || { "Rows 1": [] };
+    state.currentSlot = s.currentSlot || Object.keys(state.slotLayouts)[0];
     selected = null;
+    closePicker();
     syncWallInputs(); render(); showInspector();
   }
   function undo() {
@@ -545,9 +744,27 @@
       .map(function (r, i) { r.num = i + 1; return r; });
   }
 
+  // ---------- Mode ----------
+  function applyMode() {
+    var slots = state.mode === "slots";
+    document.body.classList.toggle("mode-slots", slots);
+    document.body.classList.toggle("mode-measured", !slots);
+    document.getElementById("modeSlots").classList.toggle("on", slots);
+    document.getElementById("modeMeasured").classList.toggle("on", !slots);
+  }
+  function setMode(m) {
+    if (state.mode === m) return;
+    state.mode = m;
+    selected = null;
+    closePicker();
+    applyMode(); render(); showInspector();
+  }
+  document.getElementById("modeSlots").onclick = function () { setMode("slots"); };
+  document.getElementById("modeMeasured").onclick = function () { setMode("measured"); };
+
   // ---------- Rendering ----------
   function render() {
-    renderWall();
+    if (state.mode === "slots") renderSlots(); else renderWall();
     renderLibrary();
     renderLayoutSelect();
     persist();
@@ -565,8 +782,8 @@
     var availH = Math.max(240, window.innerHeight - 230);
     pxPerIn = Math.min(availW / state.wall.wIn, availH / state.wall.hIn);
   }
-  window.addEventListener("beforeprint", function () { printMode = true; renderWall(); });
-  window.addEventListener("afterprint", function () { printMode = false; renderWall(); });
+  window.addEventListener("beforeprint", function () { printMode = true; render(); });
+  window.addEventListener("afterprint", function () { printMode = false; render(); });
 
   function renderWall() {
     computeScale();
@@ -671,14 +888,17 @@
       meta.className = "meta";
       meta.innerHTML = '<div class="nm"></div><div class="dm"></div>';
       meta.querySelector(".nm").textContent = it.name;
-      meta.querySelector(".dm").textContent = fmtIn(it.wIn) + " \u00D7 " + fmtIn(it.hIn);
+      var dm = meta.querySelector(".dm");
+      if (state.mode === "slots") dm.style.display = "none";
+      else dm.textContent = fmtIn(it.wIn) + " \u00D7 " + fmtIn(it.hIn);
       var count = document.createElement("span");
       count.className = "count";
-      var on = placedCount(it.id);
-      count.textContent = on + "/" + (it.qty || 1);
+      var on = state.mode === "slots" ? slotCount(it.id) : placedCount(it.id);
+      count.textContent = state.mode === "slots" ? (on ? "on wall \u00D7" + on : "") : (on + "/" + (it.qty || 1));
       var place = document.createElement("button");
       place.className = "icon-btn"; place.textContent = "Place";
       place.disabled = on >= (it.qty || 1);
+      if (state.mode === "slots") place.style.display = "none";
       place.onclick = function () { placeItem(it.id); };
       var del = document.createElement("button");
       del.className = "icon-btn"; del.textContent = "Delete";
@@ -692,13 +912,16 @@
     });
   }
 
+  function layoutBook() { return state.mode === "slots" ? state.slotLayouts : state.layouts; }
+  function currentLayoutName() { return state.mode === "slots" ? state.currentSlot : state.current; }
+
   function renderLayoutSelect() {
     var sel = els.layoutSelect;
     sel.innerHTML = "";
-    Object.keys(state.layouts).forEach(function (name) {
+    Object.keys(layoutBook()).forEach(function (name) {
       var o = document.createElement("option");
       o.value = name; o.textContent = name;
-      if (name === state.current) o.selected = true;
+      if (name === currentLayoutName()) o.selected = true;
       sel.appendChild(o);
     });
   }
@@ -722,8 +945,14 @@
     Object.keys(state.layouts).forEach(function (name) {
       state.layouts[name] = state.layouts[name].filter(function (p) { return p.itemId !== id; });
     });
+    Object.keys(state.slotLayouts).forEach(function (name) {
+      state.slotLayouts[name].forEach(function (r) {
+        r.spots = r.spots.map(function (s) { return s === id ? null : s; });
+      });
+    });
     state.items = state.items.filter(function (it) { return it.id !== id; });
     selected = null;
+    closePicker();
     render();
     showInspector();
   }
@@ -785,8 +1014,323 @@
     });
   }
 
+  // ---------- Slots (plug & play) ----------
+  var SLOT_W = 108, SLOT_H = 92, SLOT_GAP = 8, SLOT_PAD = 16;
+  var PALETTE = ["#739C91", "#8C6D4F", "#4F5D75", "#A85846", "#6B5B8C", "#3F7CAC", "#B08D3C", "#5C7457"];
+
+  function slotRows() {
+    return state.slotLayouts[state.currentSlot] || (state.slotLayouts[state.currentSlot] = []);
+  }
+  function slotCount(id) {
+    var n = 0;
+    slotRows().forEach(function (r) {
+      r.spots.forEach(function (s) { if (s === id) n++; });
+    });
+    return n;
+  }
+  function nextColor() { return PALETTE[state.items.length % PALETTE.length]; }
+
+  function renderSlots() {
+    var rows = slotRows();
+    var wallEl = document.getElementById("slotWall");
+    var main = document.querySelector("main");
+    var avail = Math.max(300, Math.min((main.clientWidth || 900) - 60, 1000));
+    var maxSpots = 3;
+    rows.forEach(function (r) { maxSpots = Math.max(maxSpots, r.spots.length); });
+    wallEl.style.width = Math.min(avail, Math.max(340, maxSpots * (SLOT_W + SLOT_GAP) + SLOT_PAD * 2)) + "px";
+    wallEl.innerHTML = "";
+
+    if (!rows.length) {
+      var empty = document.createElement("div");
+      empty.className = "slot-empty-note";
+      empty.innerHTML =
+        "<div>Your wall is a stack of rows. Start with one of these:</div>" +
+        "<div class='templates'></div>";
+      var tpl = empty.querySelector(".templates");
+      [[3, 5], [4, 4], [2, 6]].forEach(function (pair) {
+        var b = document.createElement("button");
+        b.className = "btn";
+        b.textContent = pair[0] + " rows of " + pair[1];
+        b.onclick = function () {
+          pushUndo();
+          for (var i = 0; i < pair[0]; i++) slotRows().push({ id: nextId(), spots: new Array(pair[1]).fill(null) });
+          render();
+        };
+        tpl.appendChild(b);
+      });
+      wallEl.appendChild(empty);
+    }
+
+    rows.forEach(function (row, ri) {
+      var rowEl = document.createElement("div");
+      rowEl.className = "slot-row";
+      if (!row.spots.some(function (s) { return s; })) rowEl.classList.add("all-empty");
+      rowEl.dataset.ri = ri;
+
+      var badge = document.createElement("span");
+      badge.className = "row-badge";
+      badge.textContent = "Row " + (ri + 1);
+      rowEl.appendChild(badge);
+
+      var tools = document.createElement("span");
+      tools.className = "row-tools";
+      tools.appendChild(rowTool("\u2212", "One fewer spot", function () { rowSetSpots(ri, row.spots.length - 1); }));
+      tools.appendChild(rowTool("+", "One more spot", function () { rowSetSpots(ri, row.spots.length + 1); }));
+      tools.appendChild(rowTool("\u2191", "Move row up", function () { rowMove(ri, -1); }));
+      tools.appendChild(rowTool("\u2193", "Move row down", function () { rowMove(ri, 1); }));
+      tools.appendChild(rowTool("\u29C9", "Duplicate row", function () { rowDuplicate(ri); }));
+      tools.appendChild(rowTool("\u00D7", "Delete row", function () { rowDelete(ri); }));
+      rowEl.appendChild(tools);
+
+      row.spots.forEach(function (spot, si) {
+        var s = document.createElement("div");
+        s.dataset.si = si;
+        var it = spot ? itemById(spot) : null;
+        if (it) {
+          s.className = "slot filled";
+          if (it.image) { s.classList.add("has-image"); s.style.backgroundImage = "url(" + it.image + ")"; s.style.backgroundColor = "#fff"; }
+          else { s.style.background = it.color; }
+          var num = document.createElement("div");
+          num.className = "num";
+          num.textContent = (ri + 1) + "." + (si + 1);
+          s.appendChild(num);
+          var lbl = document.createElement("div");
+          lbl.className = "lbl";
+          lbl.textContent = it.name;
+          s.appendChild(lbl);
+        } else {
+          s.className = "slot empty";
+        }
+        s.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          openPicker(ri, si, s);
+        });
+        rowEl.appendChild(s);
+      });
+
+      wallEl.appendChild(rowEl);
+    });
+
+    var bar = document.createElement("div");
+    bar.className = "add-row-bar";
+    var barInput = document.createElement("input");
+    barInput.type = "number"; barInput.min = "1"; barInput.max = "40";
+    barInput.value = document.getElementById("rowSpotsAside").value || "5";
+    bar.appendChild(document.createTextNode("Row of"));
+    bar.appendChild(barInput);
+    var barBtn = document.createElement("button");
+    barBtn.className = "btn";
+    barBtn.textContent = "+ Add row";
+    barBtn.onclick = function () { addRow(barInput.value); };
+    bar.appendChild(barBtn);
+    wallEl.appendChild(bar);
+
+    renderSlotTotals();
+  }
+
+  function rowTool(label, title, fn) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.title = title;
+    b.addEventListener("click", function (ev) { ev.stopPropagation(); fn(); });
+    return b;
+  }
+
+  function addRow(n) {
+    n = Math.max(1, Math.min(40, Math.round(+n) || 5));
+    pushUndo();
+    slotRows().push({ id: nextId(), spots: new Array(n).fill(null) });
+    render();
+  }
+  function rowSetSpots(ri, n) {
+    n = Math.max(1, Math.min(40, n));
+    var row = slotRows()[ri]; if (!row || row.spots.length === n) return;
+    pushUndo();
+    while (row.spots.length < n) row.spots.push(null);
+    row.spots.length = n;
+    render();
+  }
+  function rowMove(ri, dir) {
+    var rows = slotRows();
+    var j = ri + dir;
+    if (j < 0 || j >= rows.length) return;
+    pushUndo();
+    var t = rows[ri]; rows[ri] = rows[j]; rows[j] = t;
+    closePicker();
+    render();
+  }
+  function rowDelete(ri) {
+    var row = slotRows()[ri]; if (!row) return;
+    var filled = row.spots.filter(function (s) { return s; }).length;
+    if (filled && !confirm("Delete Row " + (ri + 1) + " and its " + filled + " filled spot" + (filled === 1 ? "" : "s") + "?")) return;
+    pushUndo();
+    slotRows().splice(ri, 1);
+    closePicker();
+    render();
+  }
+  function rowDuplicate(ri) {
+    var row = slotRows()[ri]; if (!row) return;
+    pushUndo();
+    slotRows().splice(ri + 1, 0, { id: nextId(), spots: row.spots.slice() });
+    render();
+  }
+
+  function renderSlotTotals() {
+    var counts = {}, filled = 0, total = 0;
+    slotRows().forEach(function (r) {
+      r.spots.forEach(function (s) {
+        total++;
+        if (s && itemById(s)) { counts[s] = (counts[s] || 0) + 1; filled++; }
+      });
+    });
+    var el = document.getElementById("slotTotals");
+    if (!total) { el.textContent = ""; return; }
+    var parts = Object.keys(counts).map(function (id) {
+      return itemById(id).name + " \u00D7" + counts[id];
+    });
+    el.textContent = filled + " of " + total + " spots filled" + (parts.length ? "  \u00B7  " + parts.join("  \u00B7  ") : "");
+  }
+
+  // ---------- Slot picker ----------
+  var picker = { open: false, ri: 0, si: 0 };
+  var pkEl = function () { return document.getElementById("picker"); };
+
+  function openPicker(ri, si, anchor) {
+    var row = slotRows()[ri]; if (!row) return;
+    picker = { open: true, ri: ri, si: si };
+    var filledId = row.spots[si];
+    var it = filledId ? itemById(filledId) : null;
+    document.getElementById("pkTitle").textContent = it
+      ? "Row " + (ri + 1) + " \u00B7 Spot " + (si + 1) + " - " + it.name
+      : "Fill Row " + (ri + 1) + " \u00B7 Spot " + (si + 1) + " of " + row.spots.length;
+    renderPkList();
+
+    var act = document.getElementById("pkActions");
+    act.innerHTML = "";
+    if (it) {
+      var clear = document.createElement("button");
+      clear.className = "btn"; clear.textContent = "Clear spot";
+      clear.onclick = function () {
+        pushUndo();
+        slotRows()[picker.ri].spots[picker.si] = null;
+        closePicker(); render();
+      };
+      act.appendChild(clear);
+    } else {
+      var skip = document.createElement("button");
+      skip.className = "btn"; skip.textContent = "Skip";
+      skip.onclick = function () {
+        var n = nextEmpty(picker.ri, picker.si);
+        if (n) focusPicker(n.ri, n.si); else closePicker();
+      };
+      act.appendChild(skip);
+    }
+    var done = document.createElement("button");
+    done.className = "btn quiet"; done.textContent = "Done";
+    done.onclick = closePicker;
+    act.appendChild(done);
+
+    var pk = pkEl();
+    pk.classList.add("show");
+    if (anchor) {
+      var r = anchor.getBoundingClientRect();
+      var pw = pk.offsetWidth, ph = pk.offsetHeight;
+      var left = Math.min(Math.max(8, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 8);
+      var top = r.bottom + 8;
+      if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 8);
+      pk.style.left = left + "px";
+      pk.style.top = top + "px";
+    }
+    document.getElementById("pkNewName").focus();
+  }
+
+  function focusPicker(ri, si) {
+    renderSlots();
+    var anchor = document.querySelector('.slot-row[data-ri="' + ri + '"] .slot[data-si="' + si + '"]');
+    openPicker(ri, si, anchor);
+  }
+
+  function closePicker() {
+    picker.open = false;
+    var pk = document.getElementById("picker");
+    if (pk) pk.classList.remove("show");
+  }
+
+  function nextEmpty(ri, si) {
+    var rows = slotRows();
+    for (var r = ri; r < rows.length; r++) {
+      for (var s = (r === ri ? si + 1 : 0); s < rows[r].spots.length; s++) {
+        if (!rows[r].spots[s]) return { ri: r, si: s };
+      }
+    }
+    return null;
+  }
+
+  function renderPkList() {
+    var list = document.getElementById("pkList");
+    list.innerHTML = "";
+    if (!state.items.length) {
+      var note = document.createElement("div");
+      note.className = "pk-empty";
+      note.textContent = "No items yet. Type a name below to create one.";
+      list.appendChild(note);
+      return;
+    }
+    state.items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "pk-item";
+      var chip = document.createElement("span");
+      chip.className = "chip";
+      if (it.image) chip.style.backgroundImage = "url(" + it.image + ")";
+      else chip.style.background = it.color;
+      b.appendChild(chip);
+      b.appendChild(document.createTextNode(it.name));
+      b.onclick = function () { chooseItem(it.id); };
+      list.appendChild(b);
+    });
+  }
+
+  function chooseItem(id) {
+    if (!picker.open) return;
+    pushUndo();
+    slotRows()[picker.ri].spots[picker.si] = id;
+    var n = nextEmpty(picker.ri, picker.si);
+    if (n) { render(); focusPicker(n.ri, n.si); }
+    else { closePicker(); render(); }
+  }
+
+  document.getElementById("pkNewAdd").onclick = function () {
+    var inp = document.getElementById("pkNewName");
+    var name = inp.value.trim();
+    if (!name) { inp.focus(); return; }
+    pushUndo();
+    var it = {
+      id: nextId(), name: name, wIn: 24, hIn: 24, qty: 99,
+      color: nextColor(), image: null
+    };
+    state.items.push(it);
+    inp.value = "";
+    chooseItem(it.id);
+  };
+  document.getElementById("pkNewName").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); document.getElementById("pkNewAdd").click(); }
+  });
+  document.addEventListener("pointerdown", function (ev) {
+    if (!picker.open) return;
+    var pk = pkEl();
+    if (pk.contains(ev.target)) return;
+    if (ev.target.closest && ev.target.closest(".slot")) return;
+    closePicker();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") closePicker();
+  });
+
   // ---------- Inspector ----------
   function showInspector() {
+    if (state.mode === "slots") { els.inspector.classList.remove("show"); return; }
     var p = (selected !== null) ? placedList()[selected] : null;
     var it = p ? itemById(p.itemId) : null;
     if (!it) { els.inspector.classList.remove("show"); return; }
@@ -860,7 +1404,7 @@
     var name = document.getElementById("itemName").value.trim();
     var w = +document.getElementById("itemW").value;
     var h = +document.getElementById("itemH").value;
-    var qty = Math.max(1, +document.getElementById("itemQty").value || 1);
+    var qty = state.mode === "slots" ? 99 : Math.max(1, +document.getElementById("itemQty").value || 1);
     if (!name) { document.getElementById("itemName").focus(); return; }
     if (!(w > 0) || !(h > 0)) return;
     pushUndo();
@@ -878,22 +1422,30 @@
 
   // ---------- Layouts ----------
   els.layoutSelect.onchange = function () {
-    state.current = this.value;
+    if (state.mode === "slots") state.currentSlot = this.value; else state.current = this.value;
     selected = null;
+    closePicker();
     render();
     showInspector();
   };
 
   document.getElementById("saveLayoutBtn").onclick = function () {
-    var name = prompt("Name this layout:", state.current === "Layout 1" ? "New layout" : state.current + " copy");
+    var cur = currentLayoutName();
+    var fresh = state.mode === "slots" ? "Rows 1" : "Layout 1";
+    var name = prompt("Name this layout:", cur === fresh ? (state.mode === "slots" ? "New rows" : "New layout") : cur + " copy");
     if (!name) return;
     name = name.trim(); if (!name) return;
-    if (state.layouts[name] && name !== state.current &&
+    if (layoutBook()[name] && name !== cur &&
         !confirm('"' + name + '" already exists. Replace it?')) return;
     pushUndo();
-    if (name !== state.current) {
-      state.layouts[name] = JSON.parse(JSON.stringify(placedList()));
-      state.current = name;
+    if (name !== cur) {
+      if (state.mode === "slots") {
+        state.slotLayouts[name] = JSON.parse(JSON.stringify(slotRows()));
+        state.currentSlot = name;
+      } else {
+        state.layouts[name] = JSON.parse(JSON.stringify(placedList()));
+        state.current = name;
+      }
     }
     selected = null;
     render();
@@ -930,7 +1482,10 @@
   };
 
   // ---------- Print / PDF ----------
+  var measuredTheadHTML = document.querySelector("#printTable thead").innerHTML;
   document.getElementById("printBtn").onclick = function () {
+    if (state.mode === "slots") { printSlots(); return; }
+    document.querySelector("#printTable thead").innerHTML = measuredTheadHTML;
     document.getElementById("printTitle").textContent = "Wall plan - " + state.current;
     document.getElementById("printSub").textContent =
       "Wall " + fmtIn(state.wall.wIn) + " \u00D7 " + fmtIn(state.wall.hIn) +
@@ -964,6 +1519,52 @@
     window.print();
   };
 
+  function printSlots() {
+    var rows = slotRows();
+    var totalSpots = 0, filledSpots = 0, counts = {};
+    rows.forEach(function (r) {
+      r.spots.forEach(function (s) {
+        totalSpots++;
+        if (s && itemById(s)) { filledSpots++; counts[s] = (counts[s] || 0) + 1; }
+      });
+    });
+    document.getElementById("printTitle").textContent = "Wall plan - " + state.currentSlot;
+    document.getElementById("printSub").textContent =
+      rows.length + (rows.length === 1 ? " row" : " rows") + " \u00B7 " + filledSpots + " of " + totalSpots + " spots filled" +
+      "  \u00B7  " + new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    document.querySelector("#printTable thead").innerHTML = "<tr><th style='width:70px'>Spot</th><th>Item</th></tr>";
+    var tbody = document.querySelector("#printTable tbody");
+    tbody.innerHTML = "";
+    rows.forEach(function (r, ri) {
+      r.spots.forEach(function (s, si) {
+        var it = s ? itemById(s) : null;
+        if (!it) return;
+        var tr = document.createElement("tr");
+        var sw = it.image ? "" : "background:" + it.color + ";";
+        tr.innerHTML = "<td class='numcell'></td><td><span class='sw' style='" + sw + "'></span></td>";
+        tr.cells[0].textContent = (ri + 1) + "." + (si + 1);
+        tr.cells[1].appendChild(document.createTextNode(it.name));
+        tbody.appendChild(tr);
+      });
+    });
+    var ids = Object.keys(counts);
+    if (ids.length) {
+      var head = document.createElement("tr");
+      head.innerHTML = "<td colspan='2' style='background:#eee;font-weight:600'>Totals</td>";
+      tbody.appendChild(head);
+      ids.forEach(function (id) {
+        var it = itemById(id);
+        var tr = document.createElement("tr");
+        var sw = it.image ? "" : "background:" + it.color + ";";
+        tr.innerHTML = "<td class='numcell'></td><td><span class='sw' style='" + sw + "'></span></td>";
+        tr.cells[0].textContent = "\u00D7" + counts[id];
+        tr.cells[1].appendChild(document.createTextNode(it.name));
+        tbody.appendChild(tr);
+      });
+    }
+    window.print();
+  }
+
   // ---------- Preview mode ----------
   var previewOn = false;
   document.getElementById("previewBtn").onclick = function () {
@@ -983,7 +1584,11 @@
   });
 
   // ---------- Boot ----------
-  window.addEventListener("resize", renderWall);
+  window.addEventListener("resize", render);
+  document.getElementById("addRowAside").onclick = function () {
+    addRow(document.getElementById("rowSpotsAside").value);
+  };
+  applyMode();
   syncWallInputs();
   render();
   updateUndoButtons();

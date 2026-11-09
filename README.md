@@ -6,16 +6,15 @@ A single-file personal planning tool. No backend, API key, paid API, or employee
 
 ## The flow
 
-1. **Take a picture** opens the rear-camera chooser on supported phones. **Choose wall photo** also accepts an existing image. Photos are resized locally to at most 1600 × 1400 pixels.
-2. **Send for mapping** opens the device share sheet with the photo, a mapping prompt, and an upload request file when the device supports sharing those file types. Choose the intended conversation yourself. This is a handoff, not an automatic upload. The app cannot confirm message delivery.
-3. If sharing is unavailable, **Download upload file** creates `wall-mapping-request.json`, containing the photo and the ready-to-go prompt. Send that file to the person handling mapping. Employees use the same page and send their own files; there is no shared folder exposing everyone's images.
-4. The mapping helper puts the photo and prompt into the owner's personal ChatGPT conversation and returns `wall-spot-map.json`. This is a human-assisted process, not a live ChatGPT integration. Employees do not get access to the owner's ChatGPT account.
-5. **Import map** loads the returned JSON. If it has `photo: null`, the currently open photo is kept. Check that it is the same photo used for mapping. AI counts and coordinates must be visually checked. Manual **Mark spots** is available as a backup.
-6. Enter brand, item label, colour, and count, then **Make line**. Select the line and tap its first mapped spot, or drag it onto the wall. Ten products become five, a one-position gap, then five: 11 physical positions. Distinct lines also need one empty position between them. A line that does not fit or overlaps an existing line is not placed.
-7. **Clean model** removes the photo, leaving the mapped positions and products. Zoom to 2× or 3× to select dense positions on a phone, then pan inside the wall view. The placement table remains readable below it.
-8. **Print / PDF** prints the current wall view and the placement plan. **Export plan** saves a full backup including the photo, spots, and products.
+1. **Text the picture.** Take a photo of the wall and text it to Instinct. Employees text theirs to Adam or Instinct. There is no upload button, shared folder or account on this page.
+2. Instinct reads the photo with a vision model, counts every position and sends back a map file (`wall-spot-map.json`) that also records **what is in each position right now** and which positions are empty.
+3. **Import the map Instinct sent.** The wall shows as it is: solid colour for a product, a dashed outline with `?` for a best guess to check, a red dashed outline for an empty position. Tap a position to read it. **Correct what is there** lets you fix any position by hand. The "On the wall now" table lists each run, best-guess names and the empty stretches, and prints with the plan.
+4. Enter brand, item label, colour and count, then **Make line**. Select the line and tap its first position, or drag it onto the wall. Ten products become five, a one-position gap, then five: 11 positions. Distinct lines also need one empty position between them. A line that does not fit or overlaps another line is not placed. A line placed over current stock replaces it in the plan. The app says how many current products it covers.
+5. **Clean model** removes the photo, leaving the positions, current contents and planned lines. Zoom to 2x or 3x on a phone. **Print / PDF** prints the wall view, the placement plan and the current-contents table. **Export plan** saves a full backup including the photo.
 
-The app saves the open photo plan in local browser storage. Storage failure is shown with an export warning. Clearing browser data removes that device's saved plan. Keep an exported backup. A downloaded `index.html` works offline; the hosted page needs to have loaded before it can be used without a connection.
+A photo on the device can be opened (Choose wall photo, Take a picture) as a backdrop. It is only for viewing and for manual marking. Manual **Mark spots** is a backup if no map is available. Opening a new photo clears the open plan.
+
+The app saves the open plan in local browser storage. Storage failure is shown with an export warning. Clearing browser data removes that device's saved plan. Keep an exported backup. A downloaded `index.html` works offline; the hosted page needs to have loaded before it can be used without a connection.
 
 The older row and measured planners remain under **Other modes**. Their saved state is separate and unchanged. Use **Photo wall** to return.
 
@@ -47,20 +46,7 @@ The older row and measured planners remain under **Other modes**. Their saved st
 - Optional `yEnd` is the baseline at the last spot; the app interpolates across an angled shelf. Without it, `y` is constant.
 - Optional `ys` is an array of one baseline per spot and takes precedence over `yEnd`. It must have the same length as the already-sorted `spots` array. This allows more detailed perspective correction.
 - `photo: null` keeps the already-open photo during import. A full export instead includes `photo: {"dataUrl":"data:image/jpeg;base64,...","width":1536,"height":1152}`. PNG and WebP data URLs also work. Image data URLs are limited to 4.5 million characters; map files to 6 MB.
+- Optional `contents` on a shelf records what is there now. It is an array with exactly one entry per spot, in the same order as `spots`. Each entry is `null` (empty position) or `{"label":"best-guess product","color":"#rrggbb","conf":"high"|"low"}`. `low` means a guess that needs a visual check. Maps without `contents` still import as before and show no filled/empty state. The top-level optional `mappingNote` (up to 1200 characters) is shown under the wall and prints with it.
 - `lines` may be empty for a new map. A populated line has `id`, `brand`, `item`, `count` (1-100), `color` (hex), `shelfId`, and zero-based `start`. Unplaced lines use `shelfId: null, start: null`. The app calculates five-unit runs and reserved gaps from those fields. Imports with overlapping runs are rejected.
 
-## Upload request format
-
-`wall-mapping-request.json` is a handoff envelope, not a placement map:
-
-```json
-{
-  "format": "wall-mapping-request",
-  "version": 1,
-  "name": "Shop wall",
-  "photo": {"dataUrl": "data:image/jpeg;base64,...", "width": 1536, "height": 1152},
-  "prompt": "The ready-to-go mapping instructions..."
-}
-```
-
-The mapping helper extracts the photo and prompt, uses the owner's chosen ChatGPT conversation, and returns a map in the first format. Do not commit real shop photos, employee uploads, or private maps to this public repository. There is no background upload listener, shared inbox, or automatic return-to-device route in this static page.
+Do not commit real shop photos, employee photos or private maps to this public repository. The photo-share handoff and the `wall-mapping-request` file from earlier versions were removed.

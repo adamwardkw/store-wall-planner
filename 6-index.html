@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wall Planner</title>
+<style>
+  :root {
+    --bg: #F7F8FA;
+    --panel: #FFFFFF;
+    --ink: #25313C;
+    --ink-soft: #6E7B87;
+    --line: #DCE2E7;
+    --accent: #739C91;
+    --accent-deep: #55796F;
+    --accent-soft: #EAF1EF;
+    --warn: #B4452F;
+    --wall: #FFFFFF;
+    --wall-line: #C7D0D7;
+    --scene-wall: #E9E6DF;
+    --scene-wall-hi: #F5F2EC;
+    --scene-trim-hi: #FAF7F1;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(37,49,60,.07), 0 4px 14px rgba(37,49,60,.05);
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: Inter, "Avenir Next", "Segoe UI", -apple-system, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  button { font: inherit; cursor: pointer; }
+  input, select { font: inherit; }
+  .mono { font-family: var(--mono); font-size: 12px; }
+
+  /* ---------- Header ---------- */
+  header {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 10px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-size: 16px; font-weight: 600; letter-spacing: .02em; }
+  .brand span { font-size: 12px; color: var(--ink-soft); }
+  .wall-size { display: flex; align-items: center; gap: 5px; color: var(--ink-soft); font-size: 13px; }
+  .wall-size input {
+    width: 50px; padding: 5px 6px; text-align: center;
+    border: 1px solid var(--line); border-radius: 7px; background: var(--bg);
+    font-family: var(--mono); font-size: 12px;
+  }
+  .wall-size input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .btn {
+    padding: 7px 13px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); font-size: 13px;
+  }
+  .btn:hover { border-color: var(--ink-soft); }
+  .btn.primary { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.07); }
+  .btn.quiet { border: none; background: transparent; color: var(--ink-soft); }
+  .btn.quiet:hover { color: var(--ink); background: var(--bg); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  select.layouts { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); max-width: 160px; }
+
+  /* ---------- Layout ---------- */
+  .app { display: flex; height: calc(100vh - 56px); }
+  aside {
+    width: 292px; flex-shrink: 0; overflow-y: auto;
+    background: var(--panel); border-right: 1px solid var(--line);
+    padding: 18px;
+  }
+  #inspector {
+    width: 0; overflow: hidden; flex-shrink: 0;
+    background: var(--panel); border-left: 1px solid var(--line);
+    transition: width .15s ease;
+  }
+  #inspector.show { width: 264px; }
+  #inspector .pad { width: 264px; padding: 18px; }
+  main { flex: 1; overflow: auto; padding: 24px 28px; display: flex; flex-direction: column; align-items: center; }
+
+  h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-soft); margin-bottom: 10px; }
+  .card {
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 22px;
+  }
+  .field-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .field-row label { flex: 1; font-size: 12px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 3px; }
+  .field-row input {
+    width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink);
+  }
+  .field-row input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .field-row input.num { font-family: var(--mono); font-size: 12px; }
+  .swatch-input { display: flex; gap: 6px; align-items: center; }
+  .swatch-input input[type=color] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+  .add-btn { width: 100%; margin-top: 4px; }
+
+  /* ---------- Item library ---------- */
+  .lib-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
+    margin-bottom: 8px; background: #fff;
+  }
+  .lib-item .chip { width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.10); background-size: cover; background-position: center; }
+  .lib-item .meta { flex: 1; min-width: 0; }
+  .lib-item .meta .nm { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lib-item .meta .dm { font-size: 11px; color: var(--ink-soft); font-family: var(--mono); }
+  .lib-item .count { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
+  .icon-btn { border: none; background: transparent; color: var(--ink-soft); padding: 4px 6px; border-radius: 6px; font-size: 12px; }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+  .icon-btn:disabled { opacity: .35; }
+  .empty-note { font-size: 13px; color: var(--ink-soft); padding: 6px 2px 14px; }
+
+  /* ---------- Wall canvas ---------- */
+  .stage-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; align-self: stretch; }
+  .stage-toolbar .hint { font-size: 12px; color: var(--ink-soft); }
+  .stage-toolbar .right { margin-left: auto; display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-soft); }
+  #wallWrap { position: relative; padding: 22px 30px 0 34px; }
+  #scene { position: relative; display: inline-block; }
+  #wall {
+    position: relative;
+    background-color: var(--scene-wall);
+    background-image:
+      radial-gradient(ellipse 130% 105% at 35% 5%, rgba(255,255,255,.24), rgba(255,255,255,0) 72%),
+      linear-gradient(180deg, rgba(255,255,255,0) 62%, rgba(65,55,45,.035) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    background-size: auto, auto, 140px 140px;
+    border: 1px solid #C3BDB2;
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+    box-shadow:
+      inset 0 10px 26px rgba(255,255,255,.22),
+      inset 0 -22px 34px rgba(50,45,38,.07);
+    touch-action: none;
+  }
+  #baseboard {
+    height: 9px;
+    background: linear-gradient(180deg, #EEEAE3, #C8C1B7);
+    border-top: 1px solid #F8F6F1;
+    box-shadow: 0 3px 5px rgba(40,35,30,.12);
+  }
+  #floor {
+    height: 28px;
+    width: calc(100% + 28px);
+    margin-left: -14px;
+    background:
+      linear-gradient(180deg, rgba(45,39,32,.10), rgba(45,39,32,0) 38%),
+      linear-gradient(180deg, #BDB5A9, #D9D2C8);
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 10px 22px rgba(37,49,60,.08);
+  }
+  #wall .grid-line { position: absolute; background: rgba(120,110,96,.16); pointer-events: none; }
+  .ruler-tick { position: absolute; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); pointer-events: none; }
+  .ruler-tick.top { top: -18px; transform: translateX(-50%); }
+  .ruler-tick.left { left: -30px; transform: translateY(-50%); width: 26px; text-align: right; }
+  .wall-item {
+    position: absolute; border-radius: 2px;
+    border: 1px solid rgba(46,40,32,.28);
+    display: flex; align-items: center; justify-content: center;
+    cursor: grab; user-select: none;
+    background-size: cover; background-position: center;
+    box-shadow:
+      2px 3px 4px rgba(35,30,25,.20),
+      4px 7px 10px rgba(35,30,25,.08),
+      inset 1px 1px 0 rgba(255,255,255,.22);
+    overflow: hidden;
+    transition: box-shadow 140ms ease;
+  }
+  .wall-item.has-image {
+    border: none;
+    box-shadow:
+      2px 3px 4px rgba(35,30,25,.24),
+      5px 8px 12px rgba(35,30,25,.10),
+      inset 0 0 0 3px #FBFAF6,
+      inset 0 0 0 4px rgba(46,40,32,.30);
+  }
+  .wall-item:active { cursor: grabbing; }
+  .wall-item.dragging {
+    z-index: 6;
+    box-shadow:
+      5px 8px 13px rgba(35,30,25,.24),
+      10px 18px 26px rgba(35,30,25,.12),
+      inset 1px 1px 0 rgba(255,255,255,.22);
+  }
+  .wall-item.has-image.dragging {
+    box-shadow:
+      5px 8px 13px rgba(35,30,25,.26),
+      10px 18px 26px rgba(35,30,25,.13),
+      inset 0 0 0 3px #FBFAF6,
+      inset 0 0 0 4px rgba(46,40,32,.30);
+  }
+  .wall-item.selected { outline: 2px solid var(--accent-deep); outline-offset: 2px; z-index: 5; }
+  .wall-item.locked { cursor: default; }
+  .wall-item.overlap { outline: 2px dashed var(--warn); outline-offset: -2px; }
+  .wall-item .lbl {
+    font-size: 11px; font-weight: 600; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.55);
+    padding: 0 4px; text-align: center; line-height: 1.2;
+    pointer-events: none;
+  }
+  .wall-item .num {
+    position: absolute; top: 2px; left: 2px;
+    min-width: 15px; height: 15px; border-radius: 4px;
+    background: rgba(37,49,60,.82); color: #fff;
+    font-family: var(--mono); font-size: 9px; line-height: 15px; text-align: center;
+    padding: 0 3px; pointer-events: none;
+  }
+  .scale-note { margin-top: 12px; font-size: 12px; color: var(--ink-soft); display: flex; gap: 18px; align-items: center; }
+  .overlap-banner {
+    display: none; margin-top: 10px; font-size: 12px; color: var(--warn);
+    background: #FBEEEA; border: 1px solid #ECCFC6; border-radius: 7px; padding: 6px 10px;
+  }
+  .overlap-banner.show { display: block; }
+
+  /* ---------- Preview mode (what the finished wall will look like) ---------- */
+  body.preview-mode .grid-line,
+  body.preview-mode .ruler-tick,
+  body.preview-mode .wall-item .num,
+  body.preview-mode .wall-item .lbl { display: none; }
+  body.preview-mode #wall { border-color: #B4ADA1; }
+
+  /* ---------- Inspector ---------- */
+  #inspector .insp-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; word-break: break-word; }
+  #inspector .insp-dims { color: var(--ink-soft); margin-bottom: 14px; }
+  #inspector .field-row input { background: var(--bg); }
+  #inspector .btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+  #inspector .lock-row { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
+  #inspector .lock-row input { accent-color: var(--accent-deep); }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 900px) {
+    html, body { height: auto; }
+    .app { flex-direction: column; height: auto; }
+    aside { width: 100%; border-right: none; border-bottom: 1px solid var(--line); padding: 14px; overflow-y: visible; }
+    #library { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+    .lib-item { margin-bottom: 0; flex-wrap: wrap; }
+    .lib-item .meta { flex: 1 1 60%; }
+    main { overflow: visible; padding: 16px 12px; }
+    .stage-toolbar { flex-wrap: wrap; }
+    #inspector { width: 0; border-left: none; border-top: none; }
+    #inspector.show { width: 100%; border-top: 1px solid var(--line); }
+    #inspector .pad { width: 100%; }
+    #floor { width: calc(100% + 16px); margin-left: -8px; }
+  }
+
+  /* ---------- Print ---------- */
+  #print-head, #print-legend { display: none; }
+  @media print {
+    body { background: #fff; }
+    header, aside, #inspector, main .stage-toolbar, .overlap-banner { display: none !important; }
+    .app { display: block; height: auto; }
+    main { padding: 0; display: block; overflow: visible; }
+    #scene { display: block; }
+    #baseboard, #floor { display: none !important; }
+    #wall {
+      background: #fff !important; box-shadow: none !important;
+      border: 1px solid #777 !important; border-radius: 0; margin: 0 auto;
+    }
+    .wall-item, .wall-item.has-image {
+      box-shadow: none !important; border: 1px solid #555 !important;
+      print-color-adjust: exact; -webkit-print-color-adjust: exact;
+      transition: none !important;
+    }
+    .wall-item .lbl { text-shadow: none !important; }
+    .scale-note { display: none; }
+    #print-head { display: block; color: #000; margin-bottom: 6px; }
+    #print-head h1 { font-size: 20px; margin-bottom: 2px; }
+    #print-head .sub { font-size: 11px; color: #444; font-family: var(--mono); }
+    #print-legend { display: block; color: #000; }
+    #print-legend table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+    #print-legend th, #print-legend td { border: 1px solid #999; padding: 5px 8px; text-align: left; }
+    #print-legend th { background: #eee; }
+    #print-legend .sw { display: inline-block; width: 12px; height: 12px; border: 1px solid #666; margin-right: 6px; vertical-align: -2px; }
+    #print-legend .numcell { font-family: var(--mono); text-align: center; }
+    @page { margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Wall Planner</h1>
+    <span>plan the wall before you touch it</span>
+  </div>
+  <div class="wall-size">
+    Wall
+    <input id="wallWft" type="number" min="0" max="60" value="12" title="feet"> ft
+    <input id="wallWin" type="number" min="0" max="11" value="0" title="inches"> in
+    &times;
+    <input id="wallHft" type="number" min="0" max="30" value="8" title="feet"> ft
+    <input id="wallHin" type="number" min="0" max="11" value="0" title="inches"> in
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+    <button class="btn" id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
+    <select class="layouts" id="layoutSelect" title="Saved layouts"></select>
+    <button class="btn" id="saveLayoutBtn">Save as</button>
+    <button class="btn" id="exportBtn">Export file</button>
+    <button class="btn" id="importBtn">Import</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+    <button class="btn primary" id="printBtn">Print / PDF</button>
+  </div>
+</header>
+
+<div class="app">
+  <aside>
+    <h2>Add an item</h2>
+    <div class="card">
+      <div class="field-row">
+        <label>Name
+          <input id="itemName" type="text" placeholder="Denim stack, poster, shelf" maxlength="40">
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Width (in)
+          <input id="itemW" class="num" type="number" min="1" max="400" value="24" step="0.5">
+        </label>
+        <label>Height (in)
+          <input id="itemH" class="num" type="number" min="1" max="400" value="24" step="0.5">
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Colour
+          <span class="swatch-input">
+            <input id="itemColor" type="color" value="#739C91">
+            <input id="itemImage" type="file" accept="image/*" hidden>
+            <button class="btn" id="itemImageBtn" type="button">Image</button>
+            <button class="btn quiet" id="itemImageClear" type="button" hidden>clear</button>
+          </span>
+        </label>
+        <label>Quantity
+          <input id="itemQty" class="num" type="number" min="1" max="99" value="1">
+        </label>
+      </div>
+      <button class="btn primary add-btn" id="addItemBtn">Add to library</button>
+    </div>
+
+    <h2>Your items</h2>
+    <div id="library"></div>
+    <p class="empty-note" id="libraryEmpty">Nothing here yet. Add your first item above, then press Place to put it on the wall.</p>
+  </aside>
+
+  <main>
+    <div class="stage-toolbar">
+      <span class="hint">Drag items to move them, click one for exact placement. Grid lines are 1 ft apart.</span>
+      <div class="right">
+        <button class="btn" id="previewBtn" title="Hide the grid and measurements to see the finished wall">Preview</button>
+        <span id="scaleReadout" class="mono"></span>
+      </div>
+    </div>
+    <div id="print-head">
+      <h1 id="printTitle">Wall plan</h1>
+      <div class="sub" id="printSub"></div>
+    </div>
+    <div id="wallWrap">
+      <div id="scene">
+        <div id="wall"></div>
+        <div id="baseboard"></div>
+        <div id="floor"></div>
+      </div>
+    </div>
+    <div class="scale-note"><span id="dimReadout" class="mono"></span><span id="placedReadout"></span></div>
+    <div class="overlap-banner" id="overlapBanner">Two or more items overlap. Move them apart before printing.</div>
+
+    <div id="print-legend">
+      <table id="printTable">
+        <thead><tr><th>#</th><th>Item</th><th>Size (W &times; H)</th><th>Qty on wall</th><th>Position of first (from left, from top)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </main>
+
+  <div id="inspector">
+    <div class="pad">
+      <h2>Selected item</h2>
+      <div class="insp-title" id="inspName"></div>
+      <div class="insp-dims mono" id="inspDims"></div>
+      <div class="field-row">
+        <label>From left (in)
+          <input id="inspX" class="num" type="number" step="0.5" min="0">
+        </label>
+        <label>From top (in)
+          <input id="inspY" class="num" type="number" step="0.5" min="0">
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Width (in)
+          <input id="inspW" class="num" type="number" step="0.5" min="1">
+        </label>
+        <label>Height (in)
+          <input id="inspH" class="num" type="number" step="0.5" min="1">
+        </label>
+      </div>
+      <div class="lock-row">
+        <input type="checkbox" id="inspLock"> <label for="inspLock">Lock in place</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="inspDuplicate">Duplicate</button>
+        <button class="btn" id="inspRemove">Remove</button>
+        <button class="btn quiet" id="inspDone">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- State ----------
+  var LS_KEY = "wallPlanner.v1";
+  var state = load() || {
+    wall: { wIn: 144, hIn: 96 },
+    items: [],                 // {id, name, wIn, hIn, color, image, qty}
+    layouts: { "Layout 1": [] }, // name -> [{itemId, xIn, yIn, locked}]
+    current: "Layout 1"
+  };
+
+  var els = {
+    wall: document.getElementById("wall"),
+    library: document.getElementById("library"),
+    libraryEmpty: document.getElementById("libraryEmpty"),
+    layoutSelect: document.getElementById("layoutSelect"),
+    scaleReadout: document.getElementById("scaleReadout"),
+    dimReadout: document.getElementById("dimReadout"),
+    placedReadout: document.getElementById("placedReadout"),
+    overlapBanner: document.getElementById("overlapBanner"),
+    inspector: document.getElementById("inspector"),
+    inspName: document.getElementById("inspName"),
+    inspDims: document.getElementById("inspDims"),
+    inspX: document.getElementById("inspX"),
+    inspY: document.getElementById("inspY"),
+    inspW: document.getElementById("inspW"),
+    inspH: document.getElementById("inspH"),
+    inspLock: document.getElementById("inspLock")
+  };
+
+  var selected = null;
+  var pxPerIn = 6;
+  var uid = 1;
+  function nextId() { return "it" + Date.now().toString(36) + (uid++); }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) { return null; }
+  }
+  function persist() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ---------- Undo / redo ----------
+  var undoStack = [], redoStack = [];
+  function snapshot() {
+    return JSON.stringify({ wall: state.wall, items: state.items, layouts: state.layouts, current: state.current });
+  }
+  function pushUndo() {
+    undoStack.push(snapshot());
+    if (undoStack.length > 60) undoStack.shift();
+    redoStack = [];
+    updateUndoButtons();
+  }
+  function restore(snap) {
+    var s = JSON.parse(snap);
+    state.wall = s.wall; state.items = s.items; state.layouts = s.layouts; state.current = s.current;
+    selected = null;
+    syncWallInputs(); render(); showInspector();
+  }
+  function undo() {
+    if (!undoStack.length) return;
+    redoStack.push(snapshot());
+    restore(undoStack.pop());
+    updateUndoButtons();
+  }
+  function redo() {
+    if (!redoStack.length) return;
+    undoStack.push(snapshot());
+    restore(redoStack.pop());
+    updateUndoButtons();
+  }
+  function updateUndoButtons() {
+    document.getElementById("undoBtn").disabled = !undoStack.length;
+    document.getElementById("redoBtn").disabled = !redoStack.length;
+  }
+  document.addEventListener("keydown", function (ev) {
+    var tag = (ev.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if ((ev.ctrlKey || ev.metaKey) && !ev.shiftKey && ev.key.toLowerCase() === "z") { ev.preventDefault(); undo(); }
+    else if ((ev.ctrlKey || ev.metaKey) && (ev.key.toLowerCase() === "y" || (ev.shiftKey && ev.key.toLowerCase() === "z"))) { ev.preventDefault(); redo(); }
+    else if ((ev.key === "Delete" || ev.key === "Backspace") && selected !== null) { ev.preventDefault(); removeSelected(); }
+  });
+
+  // ---------- Units ----------
+  function fmtIn(v) {
+    var ft = Math.floor(v / 12), inch = Math.round((v - ft * 12) * 10) / 10;
+    if (inch === 12) { ft++; inch = 0; }
+    if (ft && inch) return ft + "' " + inch + '"';
+    if (ft) return ft + "'";
+    return inch + '"';
+  }
+
+  function wallFromInputs() {
+    var w = (+document.getElementById("wallWft").value || 0) * 12 + (+document.getElementById("wallWin").value || 0);
+    var h = (+document.getElementById("wallHft").value || 0) * 12 + (+document.getElementById("wallHin").value || 0);
+    if (w >= 12 && h >= 12 && (w !== state.wall.wIn || h !== state.wall.hIn)) {
+      pushUndo();
+      state.wall = { wIn: w, hIn: h };
+      clipPlaced();
+      render();
+    }
+  }
+
+  function syncWallInputs() {
+    document.getElementById("wallWft").value = Math.floor(state.wall.wIn / 12);
+    document.getElementById("wallWin").value = state.wall.wIn % 12;
+    document.getElementById("wallHft").value = Math.floor(state.wall.hIn / 12);
+    document.getElementById("wallHin").value = state.wall.hIn % 12;
+  }
+
+  function clipPlaced() {
+    placedList().forEach(function (p) {
+      var it = itemById(p.itemId); if (!it) return;
+      p.xIn = Math.max(0, Math.min(p.xIn, state.wall.wIn - it.wIn));
+      p.yIn = Math.max(0, Math.min(p.yIn, state.wall.hIn - it.hIn));
+    });
+  }
+
+  // ---------- Data helpers ----------
+  function itemById(id) {
+    for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) return state.items[i];
+    return null;
+  }
+  function placedList() { return state.layouts[state.current] || (state.layouts[state.current] = []); }
+  function placedCount(id) {
+    return placedList().filter(function (p) { return p.itemId === id; }).length;
+  }
+  // Numbering in reading order (top to bottom, then left to right), shared by canvas badges and the print legend.
+  function numberedPlaced() {
+    return placedList().map(function (p, idx) { return { p: p, idx: idx, it: itemById(p.itemId) }; })
+      .filter(function (r) { return r.it; })
+      .sort(function (a, b) { return (a.p.yIn - b.p.yIn) || (a.p.xIn - b.p.xIn); })
+      .map(function (r, i) { r.num = i + 1; return r; });
+  }
+
+  // ---------- Rendering ----------
+  function render() {
+    renderWall();
+    renderLibrary();
+    renderLayoutSelect();
+    persist();
+  }
+
+  var printMode = false;
+  function computeScale() {
+    if (printMode) {
+      // fit the wall inside a printed page (96dpi CSS px, inside @page margins)
+      pxPerIn = Math.min(980 / state.wall.wIn, 640 / state.wall.hIn);
+      return;
+    }
+    var main = document.querySelector("main");
+    var availW = Math.max(320, main.clientWidth - 90);
+    var availH = Math.max(240, window.innerHeight - 230);
+    pxPerIn = Math.min(availW / state.wall.wIn, availH / state.wall.hIn);
+  }
+  window.addEventListener("beforeprint", function () { printMode = true; renderWall(); });
+  window.addEventListener("afterprint", function () { printMode = false; renderWall(); });
+
+  function renderWall() {
+    computeScale();
+    var w = els.wall;
+    w.style.width = Math.round(state.wall.wIn * pxPerIn) + "px";
+    w.style.height = Math.round(state.wall.hIn * pxPerIn) + "px";
+    w.innerHTML = "";
+
+    for (var gx = 12; gx < state.wall.wIn; gx += 12) {
+      var vl = document.createElement("div");
+      vl.className = "grid-line";
+      vl.style.left = Math.round(gx * pxPerIn) + "px";
+      vl.style.top = "0"; vl.style.bottom = "0"; vl.style.width = "1px";
+      w.appendChild(vl);
+    }
+    for (var gy = 12; gy < state.wall.hIn; gy += 12) {
+      var hl = document.createElement("div");
+      hl.className = "grid-line";
+      hl.style.top = Math.round(gy * pxPerIn) + "px";
+      hl.style.left = "0"; hl.style.right = "0"; hl.style.height = "1px";
+      w.appendChild(hl);
+    }
+    // ruler labels every 2 ft
+    for (var rx = 0; rx <= state.wall.wIn; rx += 24) {
+      var t = document.createElement("div");
+      t.className = "ruler-tick top";
+      t.style.left = Math.round(rx * pxPerIn) + "px";
+      t.textContent = (rx / 12) + "'";
+      w.appendChild(t);
+    }
+    for (var ry = 0; ry <= state.wall.hIn; ry += 24) {
+      var l = document.createElement("div");
+      l.className = "ruler-tick left";
+      l.style.top = Math.round(ry * pxPerIn) + "px";
+      l.textContent = (ry / 12) + "'";
+      w.appendChild(l);
+    }
+
+    var numbered = numberedPlaced();
+    var numByIdx = {};
+    numbered.forEach(function (r) { numByIdx[r.idx] = r.num; });
+
+    placedList().forEach(function (p, idx) {
+      var it = itemById(p.itemId); if (!it) return;
+      var d = document.createElement("div");
+      d.className = "wall-item" + (idx === selected ? " selected" : "") + (p.locked ? " locked" : "");
+      d.style.left = Math.round(p.xIn * pxPerIn) + "px";
+      d.style.top = Math.round(p.yIn * pxPerIn) + "px";
+      d.style.width = Math.round(it.wIn * pxPerIn) + "px";
+      d.style.height = Math.round(it.hIn * pxPerIn) + "px";
+      if (it.image) { d.classList.add("has-image"); d.style.backgroundImage = "url(" + it.image + ")"; d.style.backgroundColor = "#fff"; }
+      else { d.style.background = it.color; }
+      var num = document.createElement("div");
+      num.className = "num";
+      num.textContent = numByIdx[idx];
+      d.appendChild(num);
+      var lbl = document.createElement("div");
+      lbl.className = "lbl";
+      lbl.textContent = it.name;
+      d.appendChild(lbl);
+      attachDrag(d, idx);
+      w.appendChild(d);
+    });
+
+    markOverlaps();
+    els.scaleReadout.textContent = '1" = ' + (pxPerIn).toFixed(1) + " px";
+    els.dimReadout.textContent = "Wall " + fmtIn(state.wall.wIn) + " \u00D7 " + fmtIn(state.wall.hIn);
+    els.placedReadout.textContent = placedList().length + (placedList().length === 1 ? " item" : " items") + " on the wall";
+  }
+
+  function markOverlaps() {
+    var placed = placedList();
+    var nodes = els.wall.querySelectorAll(".wall-item");
+    var anyOverlap = false;
+    nodes.forEach(function (n) { n.classList.remove("overlap"); });
+    for (var i = 0; i < placed.length; i++) {
+      var a = placed[i], ia = itemById(a.itemId); if (!ia) continue;
+      for (var j = i + 1; j < placed.length; j++) {
+        var b = placed[j], ib = itemById(b.itemId); if (!ib) continue;
+        if (a.xIn < b.xIn + ib.wIn && b.xIn < a.xIn + ia.wIn &&
+            a.yIn < b.yIn + ib.hIn && b.yIn < a.yIn + ia.hIn) {
+          anyOverlap = true;
+          if (nodes[i]) nodes[i].classList.add("overlap");
+          if (nodes[j]) nodes[j].classList.add("overlap");
+        }
+      }
+    }
+    els.overlapBanner.classList.toggle("show", anyOverlap);
+  }
+
+  function renderLibrary() {
+    els.library.innerHTML = "";
+    els.libraryEmpty.style.display = state.items.length ? "none" : "block";
+    state.items.forEach(function (it) {
+      var row = document.createElement("div");
+      row.className = "lib-item";
+      var chip = document.createElement("div");
+      chip.className = "chip";
+      if (it.image) chip.style.backgroundImage = "url(" + it.image + ")";
+      else chip.style.background = it.color;
+      var meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = '<div class="nm"></div><div class="dm"></div>';
+      meta.querySelector(".nm").textContent = it.name;
+      meta.querySelector(".dm").textContent = fmtIn(it.wIn) + " \u00D7 " + fmtIn(it.hIn);
+      var count = document.createElement("span");
+      count.className = "count";
+      var on = placedCount(it.id);
+      count.textContent = on + "/" + (it.qty || 1);
+      var place = document.createElement("button");
+      place.className = "icon-btn"; place.textContent = "Place";
+      place.disabled = on >= (it.qty || 1);
+      place.onclick = function () { placeItem(it.id); };
+      var del = document.createElement("button");
+      del.className = "icon-btn"; del.textContent = "Delete";
+      del.onclick = function () {
+        if (!confirm('Delete "' + it.name + '" and remove it from every layout?')) return;
+        pushUndo(); deleteItem(it.id);
+      };
+      row.appendChild(chip); row.appendChild(meta); row.appendChild(count);
+      row.appendChild(place); row.appendChild(del);
+      els.library.appendChild(row);
+    });
+  }
+
+  function renderLayoutSelect() {
+    var sel = els.layoutSelect;
+    sel.innerHTML = "";
+    Object.keys(state.layouts).forEach(function (name) {
+      var o = document.createElement("option");
+      o.value = name; o.textContent = name;
+      if (name === state.current) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  // ---------- Actions ----------
+  function placeItem(id) {
+    var it = itemById(id); if (!it) return;
+    if (placedCount(id) >= (it.qty || 1)) return;
+    pushUndo();
+    var placed = placedList();
+    var x = 6 + (placed.length % 6) * 4, y = 6 + (placed.length % 6) * 4;
+    x = Math.min(x, Math.max(0, state.wall.wIn - it.wIn));
+    y = Math.min(y, Math.max(0, state.wall.hIn - it.hIn));
+    placed.push({ itemId: id, xIn: x, yIn: y, locked: false });
+    selected = placed.length - 1;
+    render();
+    showInspector();
+  }
+
+  function deleteItem(id) {
+    Object.keys(state.layouts).forEach(function (name) {
+      state.layouts[name] = state.layouts[name].filter(function (p) { return p.itemId !== id; });
+    });
+    state.items = state.items.filter(function (it) { return it.id !== id; });
+    selected = null;
+    render();
+    showInspector();
+  }
+
+  function removeSelected() {
+    if (selected === null) return;
+    pushUndo();
+    placedList().splice(selected, 1);
+    selected = null;
+    render(); showInspector();
+  }
+
+  // ---------- Drag ----------
+  function attachDrag(node, idx) {
+    var startX, startY, origX, origY, moved, preMoveSnap;
+    node.addEventListener("pointerdown", function (ev) {
+      ev.preventDefault();
+      var p = placedList()[idx]; if (!p) return;
+      // update selection without a full re-render (re-rendering would destroy this node mid-drag)
+      var prev = els.wall.querySelector(".wall-item.selected");
+      if (prev) prev.classList.remove("selected");
+      selected = idx;
+      node.classList.add("selected");
+      showInspector();
+      if (p.locked) return;
+      node.setPointerCapture(ev.pointerId);
+      node.classList.add("dragging");
+      startX = ev.clientX; startY = ev.clientY;
+      origX = p.xIn; origY = p.yIn; moved = false;
+      preMoveSnap = snapshot();
+    });
+    node.addEventListener("pointermove", function (ev) {
+      if (startX === undefined) return;
+      var p = placedList()[idx]; if (!p) return;
+      var it = itemById(p.itemId); if (!it) return;
+      var dx = (ev.clientX - startX) / pxPerIn;
+      var dy = (ev.clientY - startY) / pxPerIn;
+      if (Math.abs(dx) + Math.abs(dy) > 0.3) moved = true;
+      var nx = Math.round((origX + dx) * 2) / 2;
+      var ny = Math.round((origY + dy) * 2) / 2;
+      p.xIn = Math.max(0, Math.min(nx, state.wall.wIn - it.wIn));
+      p.yIn = Math.max(0, Math.min(ny, state.wall.hIn - it.hIn));
+      node.style.left = Math.round(p.xIn * pxPerIn) + "px";
+      node.style.top = Math.round(p.yIn * pxPerIn) + "px";
+      markOverlaps();
+    });
+    node.addEventListener("pointerup", function () {
+      node.classList.remove("dragging");
+      startX = undefined;
+      if (moved && preMoveSnap) {
+        undoStack.push(preMoveSnap);
+        if (undoStack.length > 60) undoStack.shift();
+        redoStack = [];
+        updateUndoButtons();
+        preMoveSnap = null;
+      }
+      renderWall();
+      showInspector();
+    });
+  }
+
+  // ---------- Inspector ----------
+  function showInspector() {
+    var p = (selected !== null) ? placedList()[selected] : null;
+    var it = p ? itemById(p.itemId) : null;
+    if (!it) { els.inspector.classList.remove("show"); return; }
+    els.inspName.textContent = it.name;
+    els.inspDims.textContent = fmtIn(it.wIn) + " \u00D7 " + fmtIn(it.hIn);
+    els.inspX.value = p.xIn;
+    els.inspY.value = p.yIn;
+    els.inspW.value = it.wIn;
+    els.inspH.value = it.hIn;
+    els.inspLock.checked = !!p.locked;
+    els.inspector.classList.add("show");
+  }
+
+  function inspApply() {
+    var p = (selected !== null) ? placedList()[selected] : null;
+    var it = p ? itemById(p.itemId) : null;
+    if (!it) return;
+    pushUndo();
+    var w = Math.max(1, +els.inspW.value || it.wIn);
+    var h = Math.max(1, +els.inspH.value || it.hIn);
+    it.wIn = w; it.hIn = h;
+    p.xIn = Math.max(0, Math.min(+els.inspX.value || 0, state.wall.wIn - w));
+    p.yIn = Math.max(0, Math.min(+els.inspY.value || 0, state.wall.hIn - h));
+    render(); showInspector();
+  }
+  [els.inspX, els.inspY, els.inspW, els.inspH].forEach(function (inp) {
+    inp.addEventListener("change", inspApply);
+  });
+  els.inspLock.addEventListener("change", function () {
+    var p = (selected !== null) ? placedList()[selected] : null; if (!p) return;
+    pushUndo();
+    p.locked = els.inspLock.checked;
+    render(); showInspector();
+  });
+  document.getElementById("inspDuplicate").onclick = function () {
+    var p = placedList()[selected]; if (!p) return;
+    var it = itemById(p.itemId); if (!it) return;
+    if (placedCount(it.id) >= (it.qty || 1)) { alert("No more of this item left. Raise its quantity to add another."); return; }
+    pushUndo();
+    placedList().push({ itemId: it.id, xIn: Math.min(p.xIn + 4, state.wall.wIn - it.wIn), yIn: Math.min(p.yIn + 4, state.wall.hIn - it.hIn), locked: false });
+    selected = placedList().length - 1;
+    render(); showInspector();
+  };
+  document.getElementById("inspRemove").onclick = removeSelected;
+  document.getElementById("inspDone").onclick = function () {
+    selected = null;
+    render(); showInspector();
+  };
+
+  // ---------- Add item ----------
+  var pendingImage = null;
+  document.getElementById("itemImageBtn").onclick = function () {
+    document.getElementById("itemImage").click();
+  };
+  document.getElementById("itemImage").onchange = function (ev) {
+    var f = ev.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      pendingImage = r.result;
+      document.getElementById("itemImageClear").hidden = false;
+    };
+    r.readAsDataURL(f);
+  };
+  document.getElementById("itemImageClear").onclick = function () {
+    pendingImage = null;
+    document.getElementById("itemImage").value = "";
+    this.hidden = true;
+  };
+
+  document.getElementById("addItemBtn").onclick = function () {
+    var name = document.getElementById("itemName").value.trim();
+    var w = +document.getElementById("itemW").value;
+    var h = +document.getElementById("itemH").value;
+    var qty = Math.max(1, +document.getElementById("itemQty").value || 1);
+    if (!name) { document.getElementById("itemName").focus(); return; }
+    if (!(w > 0) || !(h > 0)) return;
+    pushUndo();
+    state.items.push({
+      id: nextId(), name: name, wIn: w, hIn: h, qty: qty,
+      color: document.getElementById("itemColor").value,
+      image: pendingImage
+    });
+    document.getElementById("itemName").value = "";
+    pendingImage = null;
+    document.getElementById("itemImageClear").hidden = true;
+    document.getElementById("itemImage").value = "";
+    render();
+  };
+
+  // ---------- Layouts ----------
+  els.layoutSelect.onchange = function () {
+    state.current = this.value;
+    selected = null;
+    render();
+    showInspector();
+  };
+
+  document.getElementById("saveLayoutBtn").onclick = function () {
+    var name = prompt("Name this layout:", state.current === "Layout 1" ? "New layout" : state.current + " copy");
+    if (!name) return;
+    name = name.trim(); if (!name) return;
+    if (state.layouts[name] && name !== state.current &&
+        !confirm('"' + name + '" already exists. Replace it?')) return;
+    pushUndo();
+    if (name !== state.current) {
+      state.layouts[name] = JSON.parse(JSON.stringify(placedList()));
+      state.current = name;
+    }
+    selected = null;
+    render();
+    showInspector();
+  };
+
+  // ---------- Export / Import ----------
+  document.getElementById("exportBtn").onclick = function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "wall-plan-" + new Date().toISOString().slice(0, 10) + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  document.getElementById("importBtn").onclick = function () {
+    document.getElementById("importFile").click();
+  };
+  document.getElementById("importFile").onchange = function (ev) {
+    var f = ev.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var s = JSON.parse(r.result);
+        if (s && s.wall && s.items && s.layouts) {
+          pushUndo();
+          state = s; selected = null;
+          syncWallInputs(); render(); showInspector();
+        } else { alert("That file does not look like a wall plan."); }
+      } catch (e) { alert("Could not read that file."); }
+    };
+    r.readAsText(f);
+    this.value = "";
+  };
+
+  // ---------- Print / PDF ----------
+  document.getElementById("printBtn").onclick = function () {
+    document.getElementById("printTitle").textContent = "Wall plan - " + state.current;
+    document.getElementById("printSub").textContent =
+      "Wall " + fmtIn(state.wall.wIn) + " \u00D7 " + fmtIn(state.wall.hIn) +
+      "  \u00B7  " + new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) +
+      "  \u00B7  drawn to scale";
+    var tbody = document.querySelector("#printTable tbody");
+    tbody.innerHTML = "";
+    var numbered = numberedPlaced();
+    var byItem = {};
+    numbered.forEach(function (r) {
+      if (!byItem[r.it.id]) byItem[r.it.id] = { it: r.it, nums: [], qty: 0, first: r };
+      byItem[r.it.id].nums.push(r.num);
+      byItem[r.it.id].qty++;
+      if (r.p.yIn < byItem[r.it.id].first.p.yIn) byItem[r.it.id].first = r;
+    });
+    Object.keys(byItem).forEach(function (id) {
+      var s = byItem[id];
+      var tr = document.createElement("tr");
+      var sw = s.it.image ? "" : "background:" + s.it.color + ";";
+      tr.innerHTML =
+        "<td class='numcell'></td>" +
+        "<td><span class='sw' style='" + sw + "'></span></td>" +
+        "<td></td><td></td><td></td>";
+      tr.cells[0].textContent = s.nums.join(", ");
+      tr.cells[1].appendChild(document.createTextNode(s.it.name));
+      tr.cells[2].textContent = fmtIn(s.it.wIn) + " \u00D7 " + fmtIn(s.it.hIn);
+      tr.cells[3].textContent = s.qty;
+      tr.cells[4].textContent = fmtIn(s.first.p.xIn) + ", " + fmtIn(s.first.p.yIn);
+      tbody.appendChild(tr);
+    });
+    window.print();
+  };
+
+  // ---------- Preview mode ----------
+  var previewOn = false;
+  document.getElementById("previewBtn").onclick = function () {
+    previewOn = !previewOn;
+    document.body.classList.toggle("preview-mode", previewOn);
+    this.textContent = previewOn ? "Back to planning" : "Preview";
+    this.classList.toggle("primary", previewOn);
+  };
+
+  // ---------- Undo/redo buttons ----------
+  document.getElementById("undoBtn").onclick = undo;
+  document.getElementById("redoBtn").onclick = redo;
+
+  // ---------- Wall size inputs ----------
+  ["wallWft", "wallWin", "wallHft", "wallHin"].forEach(function (id) {
+    document.getElementById(id).addEventListener("change", wallFromInputs);
+  });
+
+  // ---------- Boot ----------
+  window.addEventListener("resize", renderWall);
+  syncWallInputs();
+  render();
+  updateUndoButtons();
+})();
+</script>
+</body>
+</html>
+

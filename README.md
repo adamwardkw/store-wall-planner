@@ -1,64 +1,66 @@
-# Wall Planner
+# Photo wall planner
 
-A small internal tool for planning a store display wall. Two ways to plan:
+Open https://adamwardkw.github.io/store-wall-planner/.
 
-- **Plug & play** (the default): no measuring. Add a row, say how many spots
-  it has, tap each spot to drop an item in, and move on. The wall is just
-  rows of spots, counted in items, not feet.
-- **Measured**: the original to-scale canvas. Set the wall's real size, add
-  items with real dimensions, drag them into place, and print a to-scale map.
+A single-file personal planning tool. No backend, API key, paid API, or employee account. The app code is public; imported photos and layouts are not uploaded to the repository.
 
-## How to open it
+## The flow
 
-Open the link and start planning:
+1. **Take a picture** opens the rear-camera chooser on supported phones. **Choose wall photo** also accepts an existing image. Photos are resized locally to at most 1600 × 1400 pixels.
+2. **Send for mapping** opens the device share sheet with the photo, a mapping prompt, and an upload request file when the device supports sharing those file types. Choose the intended conversation yourself. This is a handoff, not an automatic upload. The app cannot confirm message delivery.
+3. If sharing is unavailable, **Download upload file** creates `wall-mapping-request.json`, containing the photo and the ready-to-go prompt. Send that file to the person handling mapping. Employees use the same page and send their own files; there is no shared folder exposing everyone's images.
+4. The mapping helper puts the photo and prompt into the owner's personal ChatGPT conversation and returns `wall-spot-map.json`. This is a human-assisted process, not a live ChatGPT integration. Employees do not get access to the owner's ChatGPT account.
+5. **Import map** loads the returned JSON. If it has `photo: null`, the currently open photo is kept. Check that it is the same photo used for mapping. AI counts and coordinates must be visually checked. Manual **Mark spots** is available as a backup.
+6. Enter brand, item label, colour, and count, then **Make line**. Select the line and tap its first mapped spot, or drag it onto the wall. Ten products become five, a one-position gap, then five: 11 physical positions. Distinct lines also need one empty position between them. A line that does not fit or overlaps an existing line is not placed.
+7. **Clean model** removes the photo, leaving the mapped positions and products. Zoom to 2× or 3× to select dense positions on a phone, then pan inside the wall view. The placement table remains readable below it.
+8. **Print / PDF** prints the current wall view and the placement plan. **Export plan** saves a full backup including the photo, spots, and products.
 
-**https://adamwardkw.github.io/store-wall-planner/**
+The app saves the open photo plan in local browser storage. Storage failure is shown with an export warning. Clearing browser data removes that device's saved plan. Keep an exported backup. A downloaded `index.html` works offline; the hosted page needs to have loaded before it can be used without a connection.
 
-No install, no accounts. It works on phone and desktop, and works offline
-once loaded. Everything you make is saved automatically in the browser on
-that device. Use **Export file** to download a backup or move a plan to
-another device, and **Import** to load it back.
+The older row and measured planners remain under **Other modes**. Their saved state is separate and unchanged. Use **Photo wall** to return.
 
-## Plug & play mode
+## Map format, version 1
 
-- **Rows of spots**: press **Add a row** (or pick a starter like "3 rows of
-  5"). Rows stack top to bottom; each row fills the wall edge to edge.
-- **Tap to fill**: tap a spot, pick an item from the list, or type a new
-  name to create it on the spot. The picker moves to the next empty spot
-  automatically, so filling a row is tap after tap.
-- **Row controls**: each row has small buttons to add or remove a spot,
-  move it up or down, duplicate it, or delete it.
-- **Labels**: the item's name is the label - no extra step.
-- **Counts**: the library and the line under the wall show how many of each
-  item are on the wall.
-- **Preview**: one click hides the spots, numbers and controls so you see
-  what the finished wall will actually look like.
-- **Print / PDF**: a clean plan sheet with the spot map, a spot-by-spot
-  legend (spot 1.3 = row 1, third from the left), and totals per item.
-  Handy as a restocking list.
+```json
+{
+  "format": "wall-planner-photo",
+  "version": 1,
+  "name": "Shop wall",
+  "photo": null,
+  "shelves": [
+    {
+      "id": "left-1",
+      "label": "Left row 1",
+      "y": 0.4,
+      "yEnd": 0.42,
+      "spots": [0.1, 0.13, 0.16, 0.19, 0.22, 0.25, 0.28, 0.31, 0.34, 0.37, 0.4]
+    }
+  ],
+  "lines": []
+}
+```
 
-## Measured mode
+- Coordinates refer to the full original photo, not a crop. Origin is the top-left. Coordinates are fractions, not pixels.
+- Each `shelves` entry is one fixed horizontal run, often one wall section within a row. This describes what is visible in the photo; it does not create shelving.
+- `spots` lists x-centres from left to right. Allowed range: 0.02 through 0.98, with at least 0.007 between neighbours. At most 120 positions per run and 60 runs.
+- `y` is the product bottom/baseline at the first spot, between 0.05 and 0.98.
+- Optional `yEnd` is the baseline at the last spot; the app interpolates across an angled shelf. Without it, `y` is constant.
+- Optional `ys` is an array of one baseline per spot and takes precedence over `yEnd`. It must have the same length as the already-sorted `spots` array. This allows more detailed perspective correction.
+- `photo: null` keeps the already-open photo during import. A full export instead includes `photo: {"dataUrl":"data:image/jpeg;base64,...","width":1536,"height":1152}`. PNG and WebP data URLs also work. Image data URLs are limited to 4.5 million characters; map files to 6 MB.
+- `lines` may be empty for a new map. A populated line has `id`, `brand`, `item`, `count` (1-100), `color` (hex), `shelfId`, and zero-based `start`. Unplaced lines use `shelfId: null, start: null`. The app calculates five-unit runs and reserved gaps from those fields. Imports with overlapping runs are rejected.
 
-- **To-scale wall**: set the wall in feet and inches; the canvas, grid
-  (1 ft lines) and rulers (every 2 ft) stay true to scale.
-- **Item library**: add anything with a name, width, height, colour or
-  photo, and a quantity. Press **Place** to put it on the wall.
-- **Precise placement**: drag items anywhere. Click one for the inspector:
-  exact distances from the left edge and top, size, duplicate, lock, remove.
-- **Overlap warning**: items that collide are outlined in red.
-- **Print / PDF**: the to-scale wall with numbered items plus a legend with
-  sizes, quantities and exact positions.
+## Upload request format
 
-## Both modes
+`wall-mapping-request.json` is a handoff envelope, not a placement map:
 
-- **True-to-life scene**: painted wall, baseboard and floor, with soft
-  shadows and depth on every item.
-- **Layouts**: save as many named arrangements as you like and flip between
-  them. Each mode keeps its own layouts.
-- **Undo / redo**: Ctrl+Z and Ctrl+Y, across every change.
+```json
+{
+  "format": "wall-mapping-request",
+  "version": 1,
+  "name": "Shop wall",
+  "photo": {"dataUrl": "data:image/jpeg;base64,...", "width": 1536, "height": 1152},
+  "prompt": "The ready-to-go mapping instructions..."
+}
+```
 
-## Notes
-
-- Single file: the whole app is `index.html`. No build, no server, no
-  dependencies.
-- Your plans never leave your device (browser localStorage only).
+The mapping helper extracts the photo and prompt, uses the owner's chosen ChatGPT conversation, and returns a map in the first format. Do not commit real shop photos, employee uploads, or private maps to this public repository. There is no background upload listener, shared inbox, or automatic return-to-device route in this static page.

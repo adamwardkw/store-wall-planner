@@ -1086,6 +1086,10 @@
         var s = document.createElement("div");
         s.dataset.si = si;
         var it = spot ? itemById(spot) : null;
+        s.setAttribute("role", "button");
+        s.setAttribute("aria-label", it
+          ? "Row " + (ri + 1) + " spot " + (si + 1) + ": " + it.name
+          : "Fill row " + (ri + 1) + " spot " + (si + 1));
         if (it) {
           s.className = "slot filled";
           if (it.image) { s.classList.add("has-image"); s.style.backgroundImage = "url(" + it.image + ")"; s.style.backgroundColor = "#fff"; }

@@ -1607,9 +1607,9 @@ body.photo-first{height:auto;min-height:100vh;background:#f4f3f0}body.photo-firs
 <div class="pw-head"><div><h1>Your wall as it is, then your products.</h1><div class="pw-sub">Text the pic to Instinct. Import the map. See what is filled and what is empty, then drop whole brand lines into place.</div></div><div class="pw-actions"><button id="pwUndo">Undo</button><button id="pwRedo">Redo</button><button id="pwExport">Export plan</button><button id="pwImport">Import map</button><button id="pwPrint">Print / PDF</button><button id="pwLegacy">Other modes</button></div></div>
 <div class="pw-body"><div class="pw-tools">
 <div class="pw-section"><div class="pw-step">01 / Your wall</div><h3>Text the pic, get your wall back</h3><p>Text a photo of the wall to Instinct. Employees can text theirs to Adam or Instinct. Instinct reads the photo, counts every spot and sends back a map file showing what is in each space and what is empty. Nothing uploads from this page.</p><button id="pwImport2" class="wide primary">Import the map Instinct sent</button><p style="font-size:12px;margin-top:2px">On iPhone: tap the map file in Messages, tap the share icon, then Save to Files - it then shows up in the picker.</p><details class="pw-backup"><summary style="cursor:pointer;padding:10px 0;font-size:13px">Picker not cooperating? Paste the map text instead</summary><p style="font-size:12px">Open the map in the Files app, select all, copy, then paste the whole thing here.</p><textarea id="pwPaste" rows="5" spellcheck="false" autocomplete="off" placeholder="Paste the whole map text here, starting with { and ending with }" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;padding:8px;border:1px solid #cfd6da;border-radius:8px;background:#fff"></textarea><button id="pwPasteImport" class="wide primary">Import pasted map</button></details><details class="pw-backup"><summary style="cursor:pointer;padding:12px 0;font-size:13px">Have a photo on this device?</summary><p>Use it as the backdrop, then text the same photo to Instinct. A new photo clears the open plan.</p><label class="pw-upload" tabindex="0" role="button" for="pwPhoto">Choose wall photo</label><input id="pwPhoto" type="file" accept="image/*" hidden><button id="pwCamera" class="wide">Take a picture</button><input id="pwCameraFile" type="file" accept="image/*" capture="environment" hidden><button id="pwDemo" class="wide">Try an illustrated example</button></details><label for="pwName">Plan name</label><input id="pwName" value="My shop wall" maxlength="80"></div>
-<div class="pw-section"><div class="pw-step">02 / What is there now</div><h3>Check and correct</h3><p>Solid colour = a product is there. Dashed outline with ? = best guess, check it. Red dashed = empty position. Tap a position to read it. The Wall blocks view turns this into a flat, easy-to-move layout.</p><button id="pwFix" class="wide">Correct what is there</button><button id="pwReblocks" class="wide">Rebuild blocks from current wall</button><button id="pwClearNow" class="wide">Clear current contents</button><details class="pw-backup"><summary style="cursor:pointer;padding:12px 0;font-size:13px">Manual mapping (backup)</summary><p>Tap just above the shelf, where each product sits. Nearby taps join the same run.</p><button id="pwMap" class="wide">Mark spots</button><button id="pwDone" class="wide">Done mapping</button><label for="pwShelf">Shelf</label><select id="pwShelf"><option value="auto">Auto-detect from tap</option></select><button id="pwDeleteSpot" class="wide">Remove tapped spot</button><p id="pwMapHelp">No measuring. Each mark is one product position.</p></details></div>
+<div class="pw-section"><div class="pw-step">02 / What is there now</div><h3>Check and correct</h3><p>Solid colour = a product is there. Dashed outline with ? = best guess, check it. Red dashed = empty position. Tap a position to read it. The Your wall view is that same wall, flattened - every spot in its place, where you label, move, park and split blocks.</p><button id="pwFix" class="wide">Correct what is there</button><button id="pwReblocks" class="wide">Rebuild blocks from current wall</button><button id="pwClearNow" class="wide">Clear current contents</button><details class="pw-backup"><summary style="cursor:pointer;padding:12px 0;font-size:13px">Manual mapping (backup)</summary><p>Tap just above the shelf, where each product sits. Nearby taps join the same run.</p><button id="pwMap" class="wide">Mark spots</button><button id="pwDone" class="wide">Done mapping</button><label for="pwShelf">Shelf</label><select id="pwShelf"><option value="auto">Auto-detect from tap</option></select><button id="pwDeleteSpot" class="wide">Remove tapped spot</button><p id="pwMapHelp">No measuring. Each mark is one product position.</p></details></div>
 <div class="pw-section"><div class="pw-step">03 / Place products</div><h3>A whole line at a time</h3><label for="pwBrand">Brand</label><input id="pwBrand" placeholder="e.g. Brand A" maxlength="40"><label for="pwItem">Item / label</label><input id="pwItem" value="Vape" maxlength="50"><div class="pw-row"><div><label for="pwCount">How many?</label><input id="pwCount" type="number" min="1" max="100" value="10"></div><div><label for="pwColor">Colour</label><input id="pwColor" type="color" value="#508c83"></div></div><button id="pwCreate" class="primary wide">Make line</button><p>Runs of 5, then a gap. Select a line, then tap its first spot. Or drag it onto the wall.</p><div id="pwTray"></div></div>
-</div><div class="pw-stage-area"><div id="pwPrintTitle"><h1></h1><p>Wall plan. Spot numbers run left to right within each shelf.</p></div><div class="pw-topline"><div><h2 id="pwTitle">Your wall</h2><label class="pw-upload" for="pwPhoto">Choose photo</label><div class="pw-sub" id="pwStatus">Choose a photo to begin</div></div><div class="pw-view"><button id="pwBlocksView">Wall blocks</button><button id="pwPhotoView" class="active">Photo overlay</button><button id="pwModelView">Clean model</button><label style="font-size:12px;align-self:center">Zoom <select id="pwZoom" aria-label="Wall zoom"><option value="1">Fit</option><option value="2">2×</option><option value="3">3×</option></select></label></div></div><div class="pw-wall-viewport"><div class="pw-stage" id="pwStage" aria-label="Wall photo and product spots"></div></div><div id="pwBlockBar" class="pw-hidden"><button id="pwBLabel">Label block</button><button id="pwBSplit">Split into singles</button><button id="pwBPark">Park aside</button><button id="pwBNew">New single in gap</button><button id="pwBDel">Remove block</button></div><div id="pwStaging"></div><div class="pw-photo-credit" id="pwCredit"></div><div class="pw-note" id="pwNotice" role="status" aria-live="polite">Text your wall photo to Instinct, then import the map it sends back.</div><div class="pw-summary" id="pwSummary"></div><button id="pwClearSelected" class="pw-hidden">Lift selected line off wall</button><div class="pw-plan" id="pwPlan"><h3>Placement plan</h3><div id="pwTable">Your placed brand lines will appear here.</div><h3 style="margin-top:18px">On the wall now</h3><div id="pwNow">Import a map with contents to see what is in each space.</div></div></div></div><input id="pwMapFile" type="file" hidden>
+</div><div class="pw-stage-area"><div id="pwPrintTitle"><h1></h1><p>Wall plan. Spot numbers run left to right within each shelf.</p></div><div class="pw-topline"><div><h2 id="pwTitle">Your wall</h2><label class="pw-upload" for="pwPhoto">Choose photo</label><div class="pw-sub" id="pwStatus">Choose a photo to begin</div></div><div class="pw-view"><button id="pwBlocksView">Your wall</button><button id="pwPhotoView" class="active">Photo overlay</button><button id="pwModelView">Clean model</button><label style="font-size:12px;align-self:center">Zoom <select id="pwZoom" aria-label="Wall zoom"><option value="1">Fit</option><option value="2">2×</option><option value="3">3×</option></select></label></div></div><div class="pw-wall-viewport"><div class="pw-stage" id="pwStage" aria-label="Wall photo and product spots"></div></div><div id="pwBlockBar" class="pw-hidden"><button id="pwBLabel">Label block</button><button id="pwBSplit">Split into singles</button><button id="pwBPark">Park aside</button><button id="pwBNew">New single in gap</button><button id="pwBDel">Remove block</button></div><div id="pwStaging"></div><div class="pw-photo-credit" id="pwCredit"></div><div class="pw-note" id="pwNotice" role="status" aria-live="polite">Text your wall photo to Instinct, then import the map it sends back.</div><div class="pw-summary" id="pwSummary"></div><button id="pwClearSelected" class="pw-hidden">Lift selected line off wall</button><div class="pw-plan" id="pwPlan"><h3>Placement plan</h3><div id="pwTable">Your placed brand lines will appear here.</div><h3 style="margin-top:18px">On the wall now</h3><div id="pwNow">Import a map with contents to see what is in each space.</div></div></div></div><input id="pwMapFile" type="file" hidden>
 </section>
 <script>
 (function(){'use strict';
@@ -1692,25 +1692,36 @@ function blockAt(sid,i){return (p.blocks||[]).find(b=>b.shelfId===sid&&i>=b.star
 function materialize(){p.blocks=[];let n=0;sorted().forEach(s=>{if(!s.contents)return;let i=0;while(i<s.spots.length){if(!s.contents[i]){i++;continue}let j=i;while(j+1<s.spots.length&&s.contents[j+1])j++;const g=uid(),same=s.contents.slice(i,j+1).every(c=>c.label===s.contents[i].label);p.blocks.push({id:uid(),shelfId:s.id,start:i,len:j-i+1,label:same?s.contents[i].label:'',color:PALETTE[n%PALETTE.length],group:g});n++;i=j+1}})}
 function renderBlocks(stage){
  if(!p.blocks)p.blocks=[];if(!p.blocks.length&&p.shelves.some(s=>s.contents))materialize();
- if(!p.shelves.length){const e=document.createElement('div');e.className='pw-empty';e.innerHTML='<strong>No wall mapped yet.</strong><p>Import the map Instinct sent - the flat working view builds from it.</p>';stage.append(e);return}
- sorted().forEach(s=>{
-  const row=document.createElement('div');row.className='pw-brow';
-  const lab=document.createElement('div');lab.className='pw-brow-label';lab.textContent=s.label;row.append(lab);
-  const cells=document.createElement('div');cells.className='pw-bcells';
-  for(let i=0;i<s.spots.length;){
-   const b=blockAt(s.id,i);
-   if(b){
-    const d=document.createElement('button');d.type='button';d.className='pw-block'+(bsel===b.id?' sel':'');d.style.width=(b.len*30-3)+'px';d.style.setProperty('--product',b.color);d.setAttribute('aria-label',(b.label||'Unlabelled block')+', '+b.len+' spots on '+s.label);
-    const t=document.createElement('span');t.textContent=(b.label||'Unlabelled')+(b.len>1?' ×'+b.len:'');d.append(t);
-    d.onclick=e=>{e.stopPropagation();gapSel=null;bsel=bsel===b.id?null:b.id;render();if(bsel)note('Block selected. Label it, split it, park it aside - or tap a gap to move it there.')};
-    cells.append(d);i+=b.len;
-   }else{
-    const d=document.createElement('button');d.type='button';d.className='pw-bgap';d.setAttribute('aria-label',s.label+' spot '+(i+1)+': empty');const gi=i;
-    d.onclick=e=>{e.stopPropagation();gapTap(s.id,gi)};
-    cells.append(d);i++;
+ if(!p.shelves.length){const e=document.createElement('div');e.className='pw-empty';e.innerHTML='<strong>No wall mapped yet.</strong><p>Import the map Instinct sent - your flat wall builds from it.</p>';stage.append(e);return}
+ const rowKey=s=>{const m=/row\s*(\d+)/i.exec(s.label||'');if(m)return 'row'+m[1];const y=s.yEnd!=null?(s.y+s.yEnd)/2:s.y;return 'y'+Math.round(y*12)};
+ const groups=new Map();sorted().forEach(s=>{const k=rowKey(s);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(s)});
+ const rows=[...groups.values()].map(g=>({y:Math.min(...g.map(s=>s.y)),shelves:g.sort((a,b)=>a.spots[0]-b.spots[0])})).sort((a,b)=>a.y-b.y);
+ rows.forEach((g,ri)=>{
+  const row=document.createElement('div');row.className='pw-frow';
+  const lab=document.createElement('div');lab.className='pw-frow-label';lab.textContent='Row '+(ri+1);row.append(lab);
+  const runs=document.createElement('div');runs.className='pw-fruns';
+  g.shelves.forEach(s=>{
+   const covered=new Set();(p.blocks||[]).forEach(b=>{if(b.shelfId!==s.id||b.start==null)return;for(let k=b.start;k<b.start+b.len;k++)covered.add(k)});
+   const run=document.createElement('div');run.className='pw-frun';
+   const cells=document.createElement('div');cells.className='pw-bcells';
+   for(let i=0;i<s.spots.length;){
+    const b=blockAt(s.id,i);
+    if(b){
+     const d=document.createElement('button');d.type='button';d.className='pw-block'+(bsel===b.id?' sel':'');d.style.width=(b.len*30-3)+'px';d.style.setProperty('--product',b.color);d.setAttribute('aria-label',(b.label||'Unlabelled block')+', '+b.len+' spots on '+s.label);
+     const t=document.createElement('span');t.textContent=(b.label||'Unlabelled')+(b.len>1?' \u00d7'+b.len:'');d.append(t);
+     d.onclick=e=>{e.stopPropagation();gapSel=null;bsel=bsel===b.id?null:b.id;render();if(bsel)note('Block selected. Label it, split it, park it aside - or tap a gap to move it there.')};
+     cells.append(d);i+=b.len;
+    }else{
+     const d=document.createElement('button');d.type='button';d.className='pw-bgap';d.setAttribute('aria-label',s.label+' spot '+(i+1)+': empty');const gi=i;
+     d.onclick=e=>{e.stopPropagation();gapTap(s.id,gi)};
+     cells.append(d);i++;
+    }
    }
-  }
-  row.append(cells);stage.append(row);
+   run.append(cells);
+   const rl=document.createElement('div');rl.className='pw-frun-label';rl.textContent=s.label+' \u00b7 '+covered.size+'/'+s.spots.length;run.append(rl);
+   runs.append(run);
+  });
+  row.append(runs);stage.append(row);
  })
 }
 function gapTap(sid,i){
@@ -1749,8 +1760,11 @@ function enter(){document.body.classList.add('photo-first');render()}$('pwLegacy
 <style>.pw-wall-viewport{width:100%;overflow:auto;padding:5px 0 12px}.pw-view select{min-height:44px;border:1px solid #dce2e7;border-radius:7px;background:white}@media(max-width:760px){.pw-tools{grid-template-columns:1fr}.pw-section{grid-column:1/-1}.pw-line strong{white-space:normal}.pw-stage:not([style*="width: 200"]):not([style*="width: 300"]) .pw-spot:not(.filled){font-size:0!important}}@media print{.pw-wall-viewport{overflow:visible}.pw-stage{width:100%!important}}</style><style>.pw-spot:not(.filled){font-size:0!important}.pw-spot:not(.filled):hover,.pw-spot:not(.filled):focus-visible{font-size:9px!important}@media(min-width:761px){.pw-tools{max-height:calc(100vh - 90px);overflow:auto;position:sticky;top:0}}@media print{.pw-tools{display:none!important}}</style><style>@media print{body.photo-first #pwCredit{display:block!important;font-size:9px;margin:8px 0;color:#585254}}</style><style>@media print{.pw-spot:not(.filled):hover,.pw-spot:not(.filled):focus-visible{font-size:0!important}}</style><style>.pw-spot.cur{background:transparent!important;border:2px solid var(--product)!important;box-shadow:0 0 0 1px #0007}.pw-spot.cur.low{border-style:dashed!important;color:#fff!important;text-shadow:0 0 3px #000,0 0 3px #000;font-size:11px!important;font-weight:700}.pw-spot.empty{background:#ffffff40!important;border:1.5px dashed #d62f2f!important;box-shadow:0 0 0 1px #fff8}.pw-stage.clean .pw-spot.cur{background:var(--product)!important;border:0!important;box-shadow:2px 3px 4px #0003}.pw-stage.clean .pw-spot.cur.low{border:2px dashed #0006!important}.pw-stage.clean .pw-spot.empty{background:#ffffff!important;border:1.5px dashed #d62f2f!important}.pw-empty-row td{color:#b42323;font-weight:600}@media print{.pw-spot.cur.low{font-size:9px!important}}</style>
 <style>
 .pw-stage.blocks{aspect-ratio:auto!important;display:block;padding:12px 10px;background:#fff;min-height:120px;overflow:visible}
-.pw-brow{display:flex;align-items:center;gap:8px;margin:8px 0}
-.pw-brow-label{flex:0 0 64px;font-size:12px;color:#6E7B87;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-frow{display:flex;align-items:flex-start;gap:10px;margin:14px 0}
+.pw-frow-label{flex:0 0 44px;font-size:12px;font-weight:600;color:#6E7B87;padding-top:15px;white-space:nowrap}
+.pw-fruns{display:flex;gap:26px;align-items:flex-start;min-width:max-content}
+.pw-frun{display:flex;flex-direction:column;gap:4px}
+.pw-frun-label{font-size:11px;color:#6E7B87;white-space:nowrap}
 .pw-bcells{display:flex;gap:3px;align-items:stretch;min-width:max-content}
 .pw-block,.pw-bgap{height:46px;border-radius:6px;border:0;font-size:11px;overflow:hidden;padding:0 3px;flex:0 0 auto}
 .pw-bgap{width:27px;background:#fff;border:1.5px dashed #d62f2f}
@@ -1764,7 +1778,7 @@ function enter(){document.body.classList.add('photo-first');render()}$('pwLegacy
 #pwStaging{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0}
 .pw-stg-label{font-size:12px;color:#6E7B87;margin-right:2px}
 .pw-chip{border:2px solid var(--product);background:#fff;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:600}
-@media print{#pwBlockBar{display:none!important}.pw-stage.blocks{padding:4px 0}}
+@media print{#pwBlockBar{display:none!important}.pw-stage.blocks{padding:4px 0}}@media print{.pw-stage.blocks .pw-fruns{zoom:.6}.pw-frun-label{font-size:9px}}
 </style>
 </body>
   </html>
